@@ -170,6 +170,17 @@ export function createSim(o) {
     return v;
   };
 
+  // a player who left (the relay inserts this after a long disconnect): their units drop their orders and stand; nothing they send counts
+  sim.defineCommand('leave', {
+    validate: () => '',
+    apply(sim, c) {
+      const p = sim.players[c.p];
+      p.left = true;
+      for (const e of sim.entities) if (e.owner === c.p) { e.orders.length = 0; e.target = 0; }
+      sim.emit({ type: 'left', p: c.p });
+    },
+  });
+
   /** Install one more system (see installSystem) */
   sim.install = s => installSystem(sim, s);
   for (const s of o.systems ?? []) sim.install(s);
