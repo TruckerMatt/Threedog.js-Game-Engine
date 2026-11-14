@@ -10,7 +10,7 @@
 //   { p, t: 'hold',   ids }                             stay put, fight only what comes in range
 // Ids that died since the order was given are skipped; an id the player does not own refuses the whole command.
 import { mul, div, len, len2, atan2, cos, sin, angleDiff, clamp, fx, ANGLE, ONE } from './fixed.js';
-import { flowField, clearLine, GOAL, NONE, DIRS } from './flowfield.js';
+import { flowField, flowCacheOf, rebuildFlowCache, clearLine, GOAL, NONE, DIRS } from './flowfield.js';
 
 /** Most units one command may carry */
 export const MAX_IDS = 500;
@@ -148,10 +148,14 @@ export function unitsSystem() {
       }
       separate(sim);
     },
+    // which fields are cached decides some steering (see flowField), so it is saved: the goals in cache order, rebuilt after every system loaded
+    save: sim => ({ flow: [...flowCacheOf(sim).fields.keys()], builds: sim.flowBuildTick === sim.tick ? sim.flowBuilds : 0 }),
+    afterLoad(sim, d) { rebuildFlowCache(sim, d.flow); sim.flowBuildTick = sim.tick; sim.flowBuilds = d.builds; },
+    hash(sim, h) { const c = flowCacheOf(sim); h.int(c.fields.size); for (const g of c.fields.keys()) h.int(g); },
     describe(sim) {
       let moving = 0, engaging = 0;
       for (const e of sim.entities) { if (e.state === MOVING) moving++; else if (e.state === ENGAGING) engaging++; }
-      return { moving, engaging, flowFieldsCached: sim.flowCache?.size ?? 0 };
+      return { moving, engaging, flowFieldsCached: flowCacheOf(sim).fields.size };
     },
   };
 }

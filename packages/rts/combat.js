@@ -75,9 +75,8 @@ const canHit = (w, kt) => w.targets.includes(kt.air ? 'air' : 'ground');
 /** Nearest seen enemy within r that some weapon can hit; ties go to the lower id */
 function acquire(sim, e, k, team, r) {
   let best = null, bestD = Infinity;
-  sim.spatial.near(e.x, e.z, r, o => {
-    const ot = sim.teamOf(o);
-    if (ot === team || ot === -1) return;
+  sim.spatial.nearEnemies(team, e.x, e.z, r, o => {
+    if (o.owner < 0) return;
     const ko = sim.kindOf(o);
     if (!k.weapons.some(w => canHit(w, ko))) return;
     if (sim.vision && !sim.vision.seen(team, o)) return;
@@ -106,8 +105,8 @@ function hit(sim, owner, by, w, x, z, t) {
   const team = owner < 0 ? -1 : sim.players[owner].team;
   if (t && !t.dead) damage(sim, t, w, w.damage, by, owner);
   if (w.splash > 0) {
-    sim.spatial.near(x, z, w.splash, o => {
-      if (o === t || o.dead || sim.teamOf(o) === team) return;
+    sim.spatial.nearEnemies(team, x, z, w.splash, o => {
+      if (o === t || o.dead || o.owner < 0) return;
       const falloff = ONE - clamp(Math.floor((len(o.x - x, o.z - z) * ONE) / w.splash), 0, ONE);
       if (falloff > 0) damage(sim, o, w, mul(w.damage, falloff), by, owner);
     });

@@ -12,19 +12,35 @@ const CACHE_MAX = 48;
 /** New fields built per tick at most; a unit that needs one more this tick steers straight and asks again next tick */
 export const BUILDS_PER_TICK = 3;
 
-/** The flow field toward goal cell index `goal` (moved to the nearest open cell if blocked); null when this tick's build budget is spent */
-export function flowField(sim, goal) {
-  const m = sim.map, key = `${goal}:${m.version ?? 0}`;
-  const cache = sim.flowCache ??= new Map();
-  const hit = cache.get(key);
-  if (hit) { cache.delete(key); cache.set(key, hit); return hit; }   // most recent last
+/**
+ * The flow field toward goal cell index `goal` (moved to the nearest open cell if blocked); null when this tick's build budget is spent.
+ * Because of that budget, which fields are cached changes how units move, so the cache is game state: units saves its goals (in order)
+ * and rebuilds them after a load (rebuildFlowCache). A changed map (map.version) empties it.
+ */
+export function flowField(sim, goal, force = false) {
+  const m = sim.map, cache = flowCacheOf(sim);
+  const hit = cache.fields.get(goal);
+  if (hit) { cache.fields.delete(goal); cache.fields.set(goal, hit); return hit; }   // most recent last
   if (sim.flowBuildTick !== sim.tick) { sim.flowBuildTick = sim.tick; sim.flowBuilds = 0; }
-  if (sim.flowBuilds >= BUILDS_PER_TICK) return null;
-  sim.flowBuilds++;
+  if (!force && sim.flowBuilds >= BUILDS_PER_TICK) return null;
+  if (!force) sim.flowBuilds++;
   const f = build(m, openCellNear(m, goal));
-  cache.set(key, f);
-  if (cache.size > CACHE_MAX) cache.delete(cache.keys().next().value);
+  cache.fields.set(goal, f);
+  if (cache.fields.size > CACHE_MAX) cache.fields.delete(cache.fields.keys().next().value);
   return f;
+}
+
+/** The sim's field cache, emptied when the map changed */
+export function flowCacheOf(sim) {
+  const v = sim.map.version ?? 0;
+  if (!sim.flowCache || sim.flowCache.version !== v) sim.flowCache = { version: v, fields: new Map() };
+  return sim.flowCache;
+}
+
+/** After a load: rebuild the cached fields a snapshot listed, oldest first, without spending the tick budget */
+export function rebuildFlowCache(sim, goals) {
+  sim.flowCache = { version: sim.map.version ?? 0, fields: new Map() };
+  for (const g of goals) flowField(sim, g, true);
 }
 
 /** true when no blocked cell lies on the straight line between two fixed points (cell walk; for short hops) */

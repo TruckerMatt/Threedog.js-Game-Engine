@@ -89,7 +89,7 @@ export function createSim(o) {
    * Returns this tick's events.
    */
   sim.step = (cmds = []) => {
-    sim.events = [];
+    // sim.events already holds what happened since the last step (setup spawns, a kill from outside): systems see those too
     const sorted = cmds.map((c, i) => [c, i]).sort((a, b) => (a[0].p - b[0].p) || (a[1] - b[1])).map(a => a[0]);
     for (const c of sorted) sim.run(c);
     for (const s of sim.systems) s.step?.(sim);
@@ -98,7 +98,9 @@ export function createSim(o) {
       for (const [id, e] of sim.byId) if (e.dead) sim.byId.delete(id);
     }
     sim.tick++;
-    return sim.events;
+    const out = sim.events;
+    sim.events = [];
+    return out;
   };
 
   /** Apply one command now (validated). Returns '' or the reason it was refused. */
@@ -141,6 +143,7 @@ export function createSim(o) {
     sim.entities = structuredClone(snap.entities);
     sim.byId = new Map(sim.entities.map(e => [e.id, e]));
     for (const s of sim.systems) s.load?.(sim, snap.systems[s.name]);
+    for (const s of sim.systems) s.afterLoad?.(sim, snap.systems[s.name]);   // second pass: state that depends on other systems' loaded state
   };
 
   /** Short plain summary: tick, time, hash, players with unit counts, recent refused commands, each system's own line */
