@@ -55,6 +55,8 @@ export const specs = [
       check("fallback 'webgl': the loud line says running webgl", gl.warns.some(l => l.startsWith(`${LOUD}requestDevice() failed: test: no device), running webgl;`)), JSON.stringify(gl.warns));
       check("fallback 'webgl' with a NodeMaterial in the scene: start() fails naming the material and fallback: 'webgl2'",
         /MeshLambertNodeMaterial/.test(r.webglNode.error) && r.webglNode.error.includes("fallback: 'webgl2'") && /\[renderer-backend\]/.test(r.webglNode.error), r.webglNode.error);
+      check('no WebGPU and no WebGL2 (graphics turned off after a GPU hang): start() rejects saying so and to restart the browser',
+        /\[renderer-backend\]/.test(r.noGraphics.error) && r.noGraphics.error.includes('WebGL2 cannot start either') && r.noGraphics.error.includes('restart the browser'), r.noGraphics.error);
       check("fallback 'error': start() rejects with the reason", r.error.error.startsWith(`${LOUD}requestDevice() failed: test: no device) and createEngine({ fallback: 'error' })`), r.error.error);
       const o = r.own;
       check('own WebGPURenderer({ forceWebGL: true }): used as is, initialized by start(), not reported as a fallback (no loud line)',

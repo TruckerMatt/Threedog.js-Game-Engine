@@ -539,6 +539,16 @@ export async function whyNoWebGPU(limits, powerPreference) {
   deviceFrom = gpu;
   return null;
 }
+/**
+ * Whether this browser can make a WebGL2 context at all. False when it has turned graphics off for the page, which Chrome does after the GPU
+ * stopped responding (a device hang) until the browser restarts: then three's WebGL2 fallback would fail with a bare null read.
+ */
+export function webgl2Works() {
+  if (typeof document === 'undefined') return true;
+  const gl = document.createElement('canvas').getContext('webgl2');
+  gl?.getExtension('WEBGL_lose_context')?.loseContext();
+  return !!gl;
+}
 // The defaults a game's picture can pass, asked for at the adapter's own value in the one place the engine requests a device (a game's own renderer keeps the game's limits):
 // the post chain's merged scene targets pass 32 bytes per pixel (render/fx/postWebGPU.tsl.js); a material with several texture layers, plus the lights' shadow maps, passes
 // 16 textures and samplers per stage; voxelGI's triangle buffer (three's VXGIVolume, about 200 bytes a triangle) passes a 256 MB buffer and a 128 MB storage binding

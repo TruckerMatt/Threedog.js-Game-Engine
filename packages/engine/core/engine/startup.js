@@ -13,7 +13,7 @@ import { touchStart } from '../input/inputTouch.js';
 import { Loading, failureText } from './Loading.js';
 import { startHeadlessLoad } from './headlessLoad.js';
 import * as THREE from 'three';
-import { isWebGPU, backendName, whyNoWebGPU, firstNodeMaterial, webglOnlyOn, tier as detectTier, timerContext, rendererSwapped, compileThrough, borrowRenderer } from '../../render/backend.js';
+import { isWebGPU, backendName, whyNoWebGPU, webgl2Works, firstNodeMaterial, webglOnlyOn, tier as detectTier, timerContext, rendererSwapped, compileThrough, borrowRenderer } from '../../render/backend.js';
 import { bindUniforms } from '../../render/engineUniforms.js';
 import { nameShaderErrors, watchPipelineBuilds } from '../../render/shaderErrors.js';
 import { forcedTier } from '../scene/tier.js';
@@ -166,6 +166,10 @@ export const startupMethods = {
     if (reason && want.fallback === 'error') {
       throw codedError('renderer-backend', `[threedog] WebGPU unavailable (${reason}) and createEngine({ fallback: 'error' }) asked not to fall back; `
         + "fallback: 'webgl2' runs the same renderer on WebGL2 (your TSL keeps working), 'webgl' runs WebGLRenderer (GLSL only)");
+    }
+    if (reason && !webgl2Works()) {
+      throw codedError('renderer-backend', `[threedog] no graphics: WebGPU unavailable (${reason}) and WebGL2 cannot start either. The browser has turned graphics `
+        + 'off for this page, which Chrome does after the GPU stopped responding (DXGI_ERROR_DEVICE_HUNG, device lost): restart the browser. chrome://gpu says what it disabled');
     }
     if (reason && want.fallback === 'webgl') this._swapToWebGL(r);
     else if (!r.initialized) { await r.init(); this._alive(); }

@@ -97,6 +97,13 @@ window.backendCases = async () => {
     const e = make({ renderer: 'webgpu', fallback: 'error' });
     const r = { error: await message(e.start()) }; e.dispose(); return r;
   });
+  // no WebGPU and the browser refusing WebGL2 too (Chrome after a GPU hang): start() fails saying so, not with three's null read
+  out.noGraphics = await withGpu(undefined, async () => {
+    const get = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (kind, ...a) { return kind === 'webgl2' ? null : get.call(this, kind, ...a); };
+    try { const e = make({ renderer: 'webgpu' }); const r = { error: await message(e.start()) }; e.dispose(); return r; }
+    finally { HTMLCanvasElement.prototype.getContext = get; }
+  });
   // a game's own WebGPURenderer asking for WebGL2 itself: not a fallback, no loud line
   out.own = await withGpu(undefined, async () => {
     const r0 = new TG.WebGPURenderer({ canvas: canvas(), antialias: false, forceWebGL: true /* kept */ });

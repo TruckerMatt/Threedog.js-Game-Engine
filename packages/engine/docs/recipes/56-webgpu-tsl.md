@@ -18,6 +18,7 @@ Rules (correctness, not taste): `import 'threedog/tsl'` comes first in `main.js`
 - WebGPU + TSL (the default): shaders are JavaScript functions you compose, three's WebGPU examples apply, and node-only effects are open to you.
 - `--webgl` + GLSL (recipe 43): the game already has GLSL (ShaderMaterials, `onBeforeCompile`, a three.js `Pass`), must run best on modest hardware, or start-up time matters more.
 - Measure on the hardware you care about (`threedog inspect perf`, both routes, same scene): on an integrated GPU expect WebGPU slower per frame than plain WebGL, the WebGL2 backend slower still, and a later first frame (shader compilation).
+- Laptops with two GPUs: Chrome on Windows ignores `powerPreference` and takes the GPU Windows gives it, often the integrated one (`describe().renderer.gpu` names it). Windows Settings > Display > Graphics > the browser > High performance moves it to the discrete GPU. After a GPU hang (`DXGI_ERROR_DEVICE_HUNG`) Chrome turns graphics off until it restarts; `start()` then fails saying so.
 
 ## Turning it on
 ```js
