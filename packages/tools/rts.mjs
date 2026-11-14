@@ -8,6 +8,8 @@
 //   threedog rts bench   [--units 2000] [--seconds 60]   two armies attack-move into each other; ms per tick: average, p95, worst
 //   threedog rts replay  <file.json> [--sim file] [--mode …]   verify a replay (made by makeReplay or saved by the relay) against this build
 //   threedog rts relay   [--port 8788] [--replays dir]   start the lockstep relay server
+//   threedog rts browsers [--sim file] [--mode …] [--minutes 3]   play the same bot match in Node and in every Playwright browser installed
+//                        (chromium, firefox, webkit = Safari's engine) and compare hashes once a game second: cross-browser determinism
 // --sim file: a module exporting makeSim(settings) (the game's own match builder, the same one its lockstep client uses); settings are
 // { seed, players: [{ team, bot }] }. Without --sim, ./sim/index.js of the current folder is used when present, else the built-in examples.
 import { existsSync, readFileSync } from 'node:fs';
@@ -20,7 +22,7 @@ import { reinforceMatch, baseMatch, REINFORCE_CONTENT } from '@threedog/rts/exam
 import { parseOptions } from './lib/cli-args.mjs';
 
 const [sub, ...rest] = process.argv.slice(2);
-const SUBS = ['match', 'desync', 'bench', 'replay', 'relay'];
+const SUBS = ['match', 'desync', 'bench', 'replay', 'relay', 'browsers'];
 if (!SUBS.includes(sub)) { console.error(`✗ threedog rts ${sub ?? ''}: use one of ${SUBS.join(', ')} (threedog rts --help)`); process.exit(1); }
 
 if (sub === 'relay') {
@@ -152,4 +154,48 @@ if (sub === 'replay') {
   if (v.ok) console.log(`✓ ${file}: ${v.turns} turns replay with the same hashes on this build (final ${hex(v.sim.hash())}, ${v.sim.ended ? `team ${v.sim.winner} won` : 'unfinished'})`);
   else console.log(`✗ ${file}: ${v.why ?? `hash differs first at turn ${v.firstMismatch.turn} (recorded ${hex(v.firstMismatch.want)}, now ${hex(v.firstMismatch.got)})`} → the game's rules changed since it was recorded, or the sim is not deterministic (threedog rts desync)`);
   process.exit(v.ok ? 0 : 1);
+}
+
+if (sub === 'browsers') {
+  const { createServer } = await import('node:http');
+  const req = createRequire(import.meta.url), rtsDir = dirname(req.resolve('@threedog/rts/package.json'));
+  const simFile = opts.sim ? resolve(opts.sim) : existsSync('sim/index.js') ? resolve('sim/index.js') : null;
+  const minutes = num('minutes', 3), settings = settingsFor(num('seed', 1)), maxTicks = minutes * 60 * TICK_RATE;
+  const every = TICK_RATE, want = [];
+  { const sim = make(settings); while (!sim.ended && sim.tick < maxTicks) { sim.step(); if (sim.tick % every === 0) want.push(sim.hash()); } }
+  // a tiny static server: /rts/* is the sim package, /game/* the folder of --sim (its imports of '@threedog/rts' go through an import map)
+  const root = { '/rts/': rtsDir, '/game/': simFile ? dirname(simFile) : rtsDir };
+  const server = createServer((q, r) => {
+    const url = decodeURIComponent(q.url.split('?')[0]);
+    if (url === '/') { r.writeHead(200, { 'content-type': 'text/html' }); return r.end('<!doctype html><script type="importmap">{"imports":{"@threedog/rts":"/rts/index.js","@threedog/rts/":"/rts/"}}</script>'); }
+    const base = Object.keys(root).find(b => url.startsWith(b));
+    const file = base && resolve(root[base], '.' + url.slice(base.length - 1));
+    if (!file || !file.startsWith(root[base]) || !existsSync(file)) { r.writeHead(404); return r.end(); }
+    r.writeHead(200, { 'content-type': 'text/javascript' }); r.end(readFileSync(file));
+  });
+  await new Promise(ok => server.listen(0, '127.0.0.1', ok));
+  const port = server.address().port, modUrl = simFile ? `/game/${simFile.slice(dirname(simFile).length + 1)}` : '/rts/examples/content.js';
+  const exportName = simFile ? 'makeSim' : (opts.mode === 'base' ? 'baseMatch' : 'reinforceMatch');
+  const pw = await import('playwright');
+  let bad = 0, ran = 0;
+  for (const name of ['chromium', 'firefox', 'webkit']) {
+    let browser;
+    try { browser = await pw[name].launch(); } catch { console.log(`· ${name}: not installed (npx playwright install ${name})`); continue; }
+    try {
+      const page = await browser.newPage();
+      await page.goto(`http://127.0.0.1:${port}/`);
+      const got = await page.evaluate(async ({ modUrl, exportName, settings, maxTicks, every }) => {
+        const m = await import(modUrl), sim = m[exportName](settings), out = [];
+        while (!sim.ended && sim.tick < maxTicks) { sim.step(); if (sim.tick % every === 0) out.push(sim.hash()); }
+        return out;
+      }, { modUrl, exportName, settings, maxTicks, every });
+      ran++;
+      const i = want.findIndex((h, k) => got[k] !== h);
+      if (i === -1 && got.length === want.length) console.log(`✓ ${name}: ${got.length} game seconds, same hashes as Node`);
+      else { bad++; console.log(`✗ ${name}: differs from Node first at game second ${i + 1} (Node ${hex(want[i])}, ${name} ${hex(got[i] ?? 0)}) → threedog rts desync, then look for float math the R72 rule cannot see`); }
+    } finally { await browser.close(); }
+  }
+  server.close();
+  console.log(`${bad ? '✗' : '✓'} ${ran} browser(s) checked against Node`);
+  process.exit(bad ? 1 : 0);
 }

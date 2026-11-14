@@ -2,6 +2,17 @@
 
 threedog.js is a web 3D game engine on top of three.js 0.187 (plain three.js, no React), built for AI coding agents. This file is for agents that DEVELOP the engine. Agents that use it to make games read `packages/engine/docs/AI.md` (shipped with the package) instead.
 
+## This fork: an RTS engine
+This repository is a hard fork of threedog for real-time strategy games (C&C, StarCraft, World in Conflict style) with online lockstep
+multiplayer. Where docs/design.md says "general, any genre", this fork chooses RTS: gameplay systems for RTS belong here.
+- `packages/rts/` (`@threedog/rts`): the deterministic simulation (fixed-point, no three.js, runs in page / worker / Node), game modes, bots,
+  lockstep client, relay server, replays. Guide: `packages/rts/docs/RTS.md`. Upstream fixes are cherry-picked, not merged.
+- `packages/engine/modules/rts/`: draws the sim, reads input, talks to a driver (recipe 67-rts.md).
+- **Hard rule R72:** sim code (packages/rts, a game's `sim/`) uses no float trig, `**`, real time, Math.random, DOM or three.js. Every
+  machine must compute identical bits; a single `Math.sin` is a desync.
+- Every sim change is verified with `npm test -- rts` and `npx threedog rts desync` (two runs + save/load must give identical hashes);
+  performance with `npx threedog rts bench --units 2000` (p95 under 50 ms per tick).
+
 ## Read in this order (stop when you have enough)
 1. `docs/design.md`: why the engine is built this way, and its principles. It wins over every other document.
 2. `docs/architecture.md`: how the engine is built now, each part with its files, its one rule, and the test that guards it.
