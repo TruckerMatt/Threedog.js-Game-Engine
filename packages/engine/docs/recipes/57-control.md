@@ -27,7 +27,7 @@ engine.describe().control;  // the same for every held character, by id
 
 What to remember:
 - **Layers, lowest first**: `base` (the character's own driver: the player's keys, an NPC's behaviour) < `script` (walkTo, quest scripts, AI
-  orders; the default) < `cutscene` (timeline) < `physics` (a ragdoll: nothing can steer a limp body) < `net` (another machine drives it). The highest holder is in charge.
+  orders; the default) < `cutscene` (timeline) < `physics` (a ragdoll: nothing can steer a limp body) < `net` (reserved for a character another machine drives). The highest holder is in charge.
 - **A higher holder pauses the lower one, it does not cancel it.** When the cutscene ends, the walk it interrupted goes on; when the walk
   arrives, the keys work again. Nobody has to remember what to restore.
 - **One owner per layer.** Two different owners on the same layer is `[control-conflict]` in every build, naming both: end the old one first
@@ -47,7 +47,6 @@ What to remember:
 | NPC behaviour (schedule, wander, your own) | base | `'npcs'` | paused near and far while anything above holds the NPC; kept by NPC id, so it survives the model being rebuilt |
 | `character.walkTo(target)` | script | `'walkTo'` | paused under a cutscene (no progress, no stuck clock), resumes after |
 | `timeline.play(steps, { actors })` | cutscene | `'timeline'` | `actors` defaults to `[engine.player]`; `[]` drives nobody; a `path` step adds its character. Resolves `{ ending, error? }`: `'finished'`, `'skipped'`, `'dropped'` (a load, new game or dispose took its state) or `'failed'`; `timeline:end` carries the same. While the player is an actor, the `'cutscene'` input context is up |
-| `net()` | net | `'net'` | a client holds every character the host drives; the host holds each peer's avatar. Taking one is `[control-net]`: change it with an op the host runs |
 
 Two cutscenes running at once are one owner (`'timeline'`), counted per character, so they never conflict; the slot goes back when the last
 one using that character ends.

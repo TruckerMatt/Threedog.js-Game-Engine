@@ -55,7 +55,6 @@
 - [`engine.weather`](api/weather.md) weather() Weather state: defineField set label
 - [`engine.water`](api/water.md) water() Water surface: shader normalMap
 - [`engine.world`](api/world.md)  World data: add origin idOf get set move remove query forEachNear present view refresh …
-- [`engine.net`](api/net.md)  net: reconnect
 - [`engine.grids`](api/grids.md)  grids: add get list define preview
 - [`engine.collision`](api/collision.md) collision() Lightweight collision: addCircle addBox addSegment addBlocked blockedAt addObject forEachStatic mirror walkable walkableAt lineClear
 - [`engine.rigid`](api/rigid.md) rigid() Real physics, Rapier: addBox addBall addHull ragdoll impulse setPosition addWheeled
@@ -90,4 +89,4 @@
 - [`engine.weatherDraw`](api/weatherDraw.md) weather() weatherDraw
 
 ## Other
-- [Utility functions](api/tools.md): PICTURE_SLOTS presets world net fakeNetwork webSocket grids swarm screenToGround sampleGrid ease checkOptions contentParts readParams threePatches createTerrain terrainMaterial mergeColored applyEffects rampTexture bakeVertexAO materialPatches toast makeWindow …
+- [Utility functions](api/tools.md): PICTURE_SLOTS presets world grids swarm screenToGround sampleGrid ease checkOptions contentParts readParams threePatches createTerrain terrainMaterial mergeColored applyEffects rampTexture bakeVertexAO materialPatches toast makeWindow worldToScreen fadeScreen uiFocus …

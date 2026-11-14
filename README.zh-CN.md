@@ -277,7 +277,6 @@ engine.onRender(() => {
 | 音乐 | 音乐播放和切换 | [music](packages/engine/modules/music/) |
 | 环境音 | 环境声音 | [ambience](packages/engine/modules/ambience/) |
 | 调试 | 开发调试面板和检查入口 | [debug](packages/engine/modules/debug/) |
-| 网络 | 实验性的主机权威合作同步，有已知问题 | [net](packages/engine/modules/net/) |
 
 日常使用先从[任务索引](packages/engine/docs/AI.md)查入口，再读[模块 API](packages/engine/docs/api/) 和对应配方。
 
@@ -380,7 +379,7 @@ AI 按下按键、推进游戏时间、执行玩家操作，再把结果读成�
 
 已知限制：
 
-- **联机：** `engine.net` 是实验性功能，有已知问题，1.0 不保证它的行为。
+- **联机：** 引擎本身没有联机代码；联机是 [packages/rts](packages/rts/docs/RTS.md) 里的帧同步（lockstep）联机。
 - **显存：** 反复销毁并重建引擎时，每次显存上涨约 0.2 MB。正常游玩不上涨。
 - **WebGPU：** 游戏自己的 `onBeforeRender` 抛错时画面会停住，错误会报出来。这是 three.js 的限制。
 - **寻路：** 某个体型第一次寻路时，导航网格在主线程上生成，大关卡可能卡约 0.3 秒，加载时先问一次可以避开。`nav({ crowd: true })` 的人群只跑在一张网格上。

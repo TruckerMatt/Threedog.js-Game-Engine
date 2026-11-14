@@ -100,4 +100,4 @@ Yes. It is a JavaScript library with documentation. The docs and tools are shape
 
 ### Is it ready for a real game?
 
-Not yet. It is an early release, its APIs still change, and there is no compatibility layer between versions. Multiplayer exists as a basic `engine.net` but is not being developed for now. Texture compression is `threedog assets optimize`. Staged loading waits until a game needs it.
+Not yet. It is an early release, its APIs still change, and there is no compatibility layer between versions. Multiplayer is the lockstep netcode in `packages/rts` (see `packages/rts/docs/RTS.md`); the engine itself has no netcode. Texture compression is `threedog assets optimize`. Staged loading waits until a game needs it.

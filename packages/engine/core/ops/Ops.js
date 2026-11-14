@@ -13,7 +13,7 @@
 import { DEV, fmt, missingText, warnOnce, syncOnly } from '../base/validate.js';
 import { checkTypeRule, asModule } from '../engine/moduleTypes.js';
 import { checkDef, checkArgs, devError, SOURCES } from './opsCheck.js';
-import { coded, codedError } from '../base/errorHints.js';
+import { coded } from '../base/errorHints.js';
 import { guardWrite } from './opsGuard.js';
 import { failure, isStructured, opsBlocked } from './opsFail.js';
 import { runOp } from './opsRun.js';
@@ -26,7 +26,6 @@ const STRINGS = {
   unknown: 'ops.run({name}): {text}',
   canResult: "{name}'s can must return true or a reason string, e.g. return 'noMoney' (or { code, facts, nextActions }); got {got}",
   badSource: "ops.run('{name}'): source '{source}' is not one of " + SOURCES.join(', '),
-  routedTwice: 'engine.ops.route(fn): ops are already routed elsewhere (one router at a time). Fix: remove() the first one before routing again',
 };
 
 /**
@@ -46,8 +45,6 @@ export class Ops {
     /** @internal > 0 while state may be written without an op (save load, applyState, net sync) */ this._allowDepth = 0;
     /** @internal request counter (net replies carry it) */ this._seq = 0;
     /** @internal ctx of the innermost running op (nested ops inherit source, actor and session) */ this._last = null;
-    /** @internal set through route() (net clients): (def, args, opts) => result to return instead of running locally, or null to run here */ this._route = null;
-    /** @internal true while route() is held: every write outside allow() is reported, even in fixed steps and ops (own movement, world.move, excepted) */ this._client = false;
     /** Counter that only goes up: each committed op, undo, load and rollback bumps it (a failed op that changed nothing does not); every run result carries it, so "did anything change since I looked" is one compare */
     this.revision = 0;
     /** @internal depth of atomic runs in progress, and after hooks waiting for the outermost one to commit */ this._txDepth = 0; this._txAfter = []; /** @internal op:rolledBack announcements waiting for the failed run to leave the stack (opsAtomic.js) */ this._rolled = [];
@@ -252,19 +249,6 @@ export class Ops {
   guard(where) {
     if (!DEV) return;   // release builds do not check; games cannot read DEV, so the no-op lives here
     guardWrite(this, where);
-  }
-  /**
-   * Send every op to someone else instead of running it here (a multiplayer client: the host decides). fn(def, args, opts) returns the result to
-   * hand back, or null to run the op locally after all. While routed, a write outside an op or allow() is reported even in fixed steps (only the
-   * host changes game state). One router at a time; remove() runs ops locally again. Public so a transport module needs no ops internals.
-   * @param {(def: any, args: any, opts: any) => any} fn
-   * @returns {{ remove(): void }}
-   * @example const r = engine.ops.route((d, args) => d.name.startsWith('chat.') ? null : sendToHost(d.name, args));   // r.remove() on disconnect
-   */
-  route(fn) {
-    if (this._route) throw codedError('engine-misuse', STRINGS.routedTwice);
-    this._route = fn; this._client = true;
-    return { remove: () => { if (this._route !== fn) return; this._route = null; this._client = false; } };
   }
   /**
    * Put a refused request into the op history (describe().ops, ops.history) without running it: a host refusing a peer's op keeps the refusal visible

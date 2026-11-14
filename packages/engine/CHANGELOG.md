@@ -2,6 +2,13 @@
 
 What changed in each version and how a game upgrades.
 
+## Unreleased
+
+- Added: RTS engine fork. `@threedog/rts` (packages/rts): a deterministic fixed-point simulation (units, orders, flow-field movement, formations, combat, fog of war with terrain sight), game modes (`reinforceSystem`, `captureSystem`, `baseSystem`, `victorySystem`), bots (`botSystem`), drivers (`localDriver`, `lockstepDriver`, `replayDriver`), the relay (`RelayRoom`, `threedog rts relay`) and replays (`makeReplay`, `verifyReplay`). Guide: `packages/rts/docs/RTS.md`.
+- Added: `rts()` module (`engine.rts`: `select`, `issue`, `selection`, `meshes`, `fog`, ring and bar materials; events `rts:fire`, `rts:hit`, `rts:death`, `rts:spawn`; ops `rts.order`, `rts.select`; uniforms `uRtsFog`, `uRtsFogBounds`), recipe 67-rts.md, and `presets.bindings.rts`.
+- Added: `threedog rts match | desync | bench | replay | relay | browsers` (headless RTS tools), `new-game --rts` / `init --rts` (a reinforcement match against a bot), and rule R72 (no float trig, real time, randomness, DOM or three.js in simulation code).
+- Removed: the experimental multiplayer module, in full and with no compatibility layer. Gone: `net()` (the `net` module and `engine.net`), the `webSocket` and `fakeNetwork` transports, the `net:join`, `net:leave`, `net:open`, `net:close`, `net:sync` and `net:result` events, `engine.ops.route()`, the `net-option` error code, `threedog relay [port]` (`packages/tools/net-relay.mjs`), recipe 27 (`27-net.md`) and `api/net.md`, and its tests (`tests/specs/net.mjs`, `tests/coop/`, `tests/net/`). `pickups()` no longer lists `net` as an optional module and its default `takers` is `engine.actor` plus the seats' actors. Replaced by the lockstep netcode in `@threedog/rts` (`lockstepDriver`, `threedog rts relay`; see `packages/rts/docs/RTS.md`). A game that used `net()` has to drop it; there is no replacement for co-op outside the RTS package.
+
 ## 1.3.0 (2026-11-12)
 
 - Fixed: on WebGPU the engine now asks the device for the adapter's own `maxBufferSize`, `maxStorageBufferBindingSize`, `maxSampledTexturesPerShaderStage` and `maxSamplersPerShaderStage` (as it already did for the color attachment limits) instead of WebGPU's defaults. Before, `voxelGI` on a scene of about a million triangles or more failed every frame with `Buffer size exceeds the max buffer size limit` (its triangle buffer passed the default 256 MB), and a material with more than 16 textures counting the lights' shadow maps failed with only `Invalid PipelineLayout`. Measured on one desktop GPU: buffer 256 MB to 2 GB, storage binding 128 MB to 2 GB, textures per stage 16 to 48; samplers stay where the adapter's own limit is 16. A game's own renderer keeps the limits the game gave it.

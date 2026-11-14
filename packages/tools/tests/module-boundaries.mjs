@@ -15,8 +15,6 @@ export async function run({ check }) {
   for (const [file, what] of [['R27-core-names-modules.mjs', 'core / render / ui name no module'], ['R47-module-types.mjs', 'every module has a type; world modules draw nothing'], ['R25-private-reach.mjs', 'no module reaches into another module _fields'], ['R46-module-internals.mjs', 'no module imports another module files']]) {
     const rule = await load(file), out = rule.run(), errors = out.filter(x => x.level === 'error');
     check(`${rule.id}: ${what}`, errors.length === 0, errors.slice(0, 5).map(x => `${x.file}:${x.line} ${x.msg}`).join('; '));
-    // the net pass removed its five R25 entries (ops._route, world._s, inventory._containers...): a new one would mean reaching back in
-    if (rule.id === 'R25') check('R25 allowlist has no net entries (net uses ops.route / refused, world.pauseSimulation, inventory.contents / setContents)', !/^\s*\['net',/m.test((await import('node:fs')).readFileSync(join(TOOLS, 'rules', file), 'utf8')), file);
     if (rule.id === 'R27') check('R27 found the module names it checks for (definitions with type before label are read)', /module names: (\d+)/.exec(out.note)?.[1] > 25, out.note);
   }
   // R16 / R46 read imports the way they are written in any form: a roundabout path and a dynamic import() land in the other module too
@@ -25,10 +23,10 @@ export async function run({ check }) {
   check('R16 / R46 imports: ../../modules/nav/x.js, import(\'../nav/x.js\') and import \'../nav/x.js\' land in nav; ./y.js stays in a; ../../core is outside',
     lands(`import { q } from '../../modules/nav/x.js';`) === 'nav/x.js' && lands(`const m = await import('../nav/x.js');`) === 'nav/x.js'
     && lands(`import '../nav/x.js';`) === 'nav/x.js' && lands(`import { y } from './y.js';`) === 'a/y.js' && lands(`import { v } from '../../core/base/math.js';`) === '');
-  // [guard] one owner scope: a built-in module registers through ctx, so its unload, rollback and failed init take it along. engine.net stays as it is (decision 2026-11-04)
+  // [guard] one owner scope: a built-in module registers through ctx, so its unload, rollback and failed init take it along.
   const { walk, read } = await import(pathToFileURL(join(TOOLS, 'rules', '_lib.mjs')).href);
   const raw = /\b(?:e|engine|eng|this\.e|this\.engine)\.(ops\.define|saves\.(?:define|register)|ui\.define|stream\.addReadyCheck|budget\.metric|addGroundColliders|setGround|explainWith|_things\.addSource)\(/;
-  const bypass = walk(P.MODULES_REL).filter(f => !f.includes('/net/')).flatMap(f => read(f).split('\n').flatMap((l, i) =>
+  const bypass = walk(P.MODULES_REL).flatMap(f => read(f).split('\n').flatMap((l, i) =>
     raw.test(l) && !/^\s*(\/\/|\*|\+ ")/.test(l) && !/^\s*export const \w+ = "/.test(l) ? [`${f}:${i + 1}`] : []));
   check('built-in modules register ops, save parts, ui, ready checks, metrics, sources and ground through ctx, never straight on the engine', !bypass.length, bypass.slice(0, 8).join(' '));
   // R50: calls on a contract-backed module are in its contract (the inventory contract once missed contents / setContents / renameIds)

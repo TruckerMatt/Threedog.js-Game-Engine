@@ -100,4 +100,4 @@ three.js 0.187 里有现成的部件，我们做过一次实测。大部分已�
 
 ### 能用来做正式游戏了吗？
 
-还不行。这是早期版本，接口还在变，版本之间没有兼容层。多人联机只有基础的 `engine.net`，目前暂不开发。贴图压缩用 `threedog assets optimize`。分批加载要等真有游戏需要时再做。
+还不行。这是早期版本，接口还在变，版本之间没有兼容层。多人联机是 `packages/rts` 里的帧同步（lockstep）联机（见 `packages/rts/docs/RTS.md`），引擎本身没有联机代码。贴图压缩用 `threedog assets optimize`。分批加载要等真有游戏需要时再做。

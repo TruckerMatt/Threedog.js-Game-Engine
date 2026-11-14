@@ -9,14 +9,25 @@
   },
   "main": "./index.js",
   "exports": {
-    ".": "./index.js",
-    "./fixed": "./fixed.js",
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./fixed": {
+      "types": "./fixed.d.ts",
+      "default": "./fixed.js"
+    },
     "./examples/*": "./examples/*",
     "./package.json": "./package.json"
   },
   "files": [
     "*.js",
     "*.mjs",
+    "*.d.ts",
+    "modes",
+    "net",
+    "examples",
     "docs"
-  ]
+  ],
+  "types": "./index.d.ts"
 }

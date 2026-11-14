@@ -23,7 +23,6 @@ export const MODULES = {
   lightPool: 'hundreds of street lamps at night',
   music: 'background song changes in a fight',
   nav: 'enemy walks around obstacles to reach the player',
-  net: 'two people playing together over the internet',
   particles: 'smoke and sparks',
   photo: 'take a snapshot in game and keep it',
   pickups: 'coins on the ground to collect',
@@ -125,7 +124,6 @@ export const RECIPES = {
   '22-shop-gold': 'buy and sell for money',
   '23-ops': 'one way for players and villagers to do the same action',
   '26-ui-parts': 'replace the built in screen widgets',
-  '27-net': 'play together with a friend',
   '28-terrain': 'raise and dig the land',
   '29-grid': 'place buildings on a board of cells',
   '30-templates': 'one chest definition used many times',
@@ -172,7 +170,7 @@ export const CATEGORIES = {
   picture: { title: 'Picture and effects', ids: `post lights shadows particles photo lightPool terrainDraw vegetationDraw weatherDraw plugins shaderTerms uniforms 09-materials-lights-models 34-environment-lighting 35-picture-from-reference
     43-shader-patches-surfaces 45-cascaded-shadows 50-own-renderer 52-around-the-picture 56-webgpu-tsl 59-depth-post-effects 60-judge-the-picture 62-picture-code 64-particles` },
   screen: { title: 'Sound, screens and text', ids: 'audio music ambience hud ui i18n loading error 26-ui-parts 31-audio' },
-  tools: { title: 'Files, speed, debugging and sharing', ids: 'assets debugPanel debug net adaptive budget occlusion threads startup 15-perf 16-dev-bridge 27-net 51-capability-catalog 61-deploy' },
+  tools: { title: 'Files, speed, debugging and sharing', ids: 'assets debugPanel debug adaptive budget occlusion threads startup 15-perf 16-dev-bridge 51-capability-catalog 61-deploy' },
 };
 
 /** The "Does not fit" line of a card, where no docs row or recipe section says it. Small and hand-written on purpose: a judgement, no fact the metadata has */
@@ -233,7 +231,6 @@ export const ROUTES = [
   ['slow motion', '55-mods-time-wrap.md §"Time channels"'],
   ['morning and night cycle', '06-clock-events.md §"The time table"'],
   ['random numbers and what caused an event', '06-clock-events.md'],
-  ['play with friends online', '27-net.md §1'],
   ['who drives the player body', '57-control.md §"Who takes what"'],
   ['follow camera behind the player', '21-camera.md §1'],
   ['side view platformer', '21-camera.md §6'],

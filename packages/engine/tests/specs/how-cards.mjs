@@ -34,7 +34,7 @@ export const specs = [
             if (!freeCard) {
               const [, call, wanted] = /engine\.use\((\w+)\((?:\{ ([\w, ]+) \})?\)\)/.exec(c.install) ?? [];
               // what the line says the game must pass: values only this test needs, and an option nobody filled in here fails the install below
-              const fill = { pick: 'nearest', role: 'host', transport: TD.fakeNetwork().connect() }, given = Object.fromEntries((wanted?.split(', ') ?? []).map(k => [k, fill[k]]));
+              const fill = { pick: 'nearest' }, given = Object.fromEntries((wanted?.split(', ') ?? []).map(k => [k, fill[k]]));
               const named = /import \{ ([^}]*) \}/.exec(c.install)?.[1].split(', ') ?? [];
               for (const k of named) if (typeof TD[k] !== 'function') say(`Install imports ${k}, which threedog does not export`);
               if (/^\w+$/.test(c.id) && c.kind === 'group' && e[c.id] != null) say(`Install says to install something, but a bare engine has engine.${c.id}`);

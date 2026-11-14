@@ -49,7 +49,6 @@ Taking over a game: its status notes first. A new feature: docs/AI.md or threedo
 - New game / continue, scene flow, fades, pause for a menu, cutscenes: docs/recipes/07-flow-scenes-pause.md §4
 - Slow or speed up time, bullet time: docs/recipes/55-mods-time-wrap.md §"Time channels"
 - Time of day, day / night, seasons: docs/recipes/08-weather-sky.md §4, 06-clock-events.md
-- Multiplayer: docs/recipes/27-net.md §1
 
 ## Characters, input, UI
 
@@ -135,7 +134,6 @@ Taking over a game: its status notes first. A new feature: docs/AI.md or threedo
 - [22-shop-gold](docs/recipes/22-shop-gold.md): Shop and gold: buy, sell / consign, gold HUD, saving
 - [23-ops](docs/recipes/23-ops.md): Ops: one entry point for what players and NPCs do (engine.ops)
 - [26-ui-parts](docs/recipes/26-ui-parts.md): UI parts: replace or turn off any piece of the engine's screen UI
-- [27-net](docs/recipes/27-net.md): Co-op multiplayer: net() (host authority + state sync)
 - [28-terrain](docs/recipes/28-terrain.md): Terrain: your own generator, digging, raising and painting the ground, islands
 - [29-grid](docs/recipes/29-grid.md): Grid placement: towers, furniture, buildings, crops
 - [30-templates](docs/recipes/30-templates.md): Templates: reusable objects, definition vs instance state

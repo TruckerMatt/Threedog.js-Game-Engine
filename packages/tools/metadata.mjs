@@ -14,7 +14,7 @@ import { parseOptions } from './lib/cli-args.mjs';
 
 const CHECK = !!parseOptions(process.argv.slice(2), { flags: ['check'] }).opt.check;
 const OUT = abs(P.METADATA_REL);
-const ARGS = { net: { role: 'host', transport: {} }, rts: { driver: {} } };   // the factories that refuse to build with no options; a definition is only read here, nothing connects
+const ARGS = { rts: { driver: {} } };   // the factories that refuse to build with no options; a definition is only read here, nothing connects
 const load = f => import(pathToFileURL(abs(f)).href);
 const isContract = f => /(^|[/.])contract\.js$/.test(f);
 const AUTHORED = f => !f.startsWith(`${P.MODULES_REL}/content/`);   // a pack's own actions are the game's, listed in its GAMEMAP
@@ -105,7 +105,6 @@ function paramsOf(def, page) {
 
 // What hand-written game code a system replaces, declared next to its definition as `export const handRolled` (a list of hints, or 'none: why no code shape can show it').
 // A plain export and not a field of the definition: nothing imports it, so a game's bundle drops it and it costs nothing at run time. Regexes become strings here; rule R40 rebuilds them.
-const FROZEN = { net: 'none: an own connection is a plain WebSocket, used on purpose' };   // modules/net is not edited for now (no multiplayer work), so its answer is kept here
 const HINT_RE = ['quiet', 'code', 'raw', 'orRaw', 'not', 'notRaw'];
 const hintData = (h, file) => ({ ...h, file, ...Object.fromEntries(HINT_RE.filter(k => h[k]).map(k => [k, String(h[k])])), ...(h.near && { near: h.near.map(n => ({ ...n, re: String(n.re) })) }), ...(h.yields && { yields: { ...h.yields, raw: String(h.yields.raw) } }) });
 /** Every hint in the source, by kind. A file is read only when it declares one; core systems declare here too, they have no module definition */
@@ -168,7 +167,7 @@ async function build() {
     try { const mod = await load(f.file); said = mod.handRolled; defs = [mod[f.call](ARGS[f.call])].flat(); }
     catch (e) { problems.push(`${f.file}: ${f.call}() would not build: ${e.message}`); continue; }
     for (const def of defs.filter(d => d?.name && d.install)) {
-      modules[def.name] ??= moduleOf(def, f, thin[f.call], said ?? FROZEN[def.name]);
+      modules[def.name] ??= moduleOf(def, f, thin[f.call], said);
       for (const [name, s] of Object.entries(def.content ?? {})) { sections[name] = { owner: def.name, ...(s.live && { live: true }) }; docs[name] = s.desc; for (const [w, d] of Object.entries(s.effects ?? {})) effects[w] = { ref: d.ref, desc: d.desc, describe: d.describe('{v}') }; }
     }
   }

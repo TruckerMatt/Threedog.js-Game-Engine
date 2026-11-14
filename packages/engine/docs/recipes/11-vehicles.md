@@ -91,15 +91,14 @@ warning names a rebuild that dropped joints when none was re-created by the next
 `build` adds come back after the event, so create their joints in that `build`. With a vehicle present the world is kept (no event, joints
 stay). Removing a body removes its joints (Rapier does that).
 
-**Determinism**, the one place this is stated (replay, `engine.step`, saves and net link here):
+**Determinism**, the one place this is stated (replay, `engine.step`, saves link here):
 - Same build, same machine, same inputs and the same number of fixed steps give bit-identical bodies, in a fresh page and at any frame rate.
   Physics only advances in fixed steps. Test: `threedog test "rigid determinism"`: stacked boxes knocked over, a rolling ball, a driving car, the
   `mover: 'rapier'` player, two fresh pages, `frameEvery` 1 / 2 / 4.
 - A load restores each saved body exactly. Rapier's contact and warm-start caches and its solver order are not saved, so the run after a load
   is not bit-identical to the run that went on without the load: a toppling stack can end some centimetres away. Bodies at rest stay at rest.
 - Across machines: the engine uses `@dimforge/rapier3d-compat`, which Rapier does not promise to be cross-platform deterministic (that is the
-  separate `rapier3d-deterministic` build). Two machines can drift apart. The net module does not depend on matching physics: the host owns the
-  state, and physics is not synced (each machine simulates its own bodies).
+  separate `rapier3d-deterministic` build). Two machines can drift apart; lockstep multiplayer (`packages/rts`) does not use Rapier for its simulation.
 
 ## 3b. Ragdoll (experimental)
 

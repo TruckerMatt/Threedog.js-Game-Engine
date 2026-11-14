@@ -94,7 +94,7 @@ content/*.js is content data: how to write it in `node_modules/threedog/docs/rec
 | picture/lights.js | 33 | @ts-check skirmish lights: a sun that follows uSunDir and uDaylight, and one ambient fill. update()… |
 | picture/materials.js | 11 | @ts-check skirmish materials by name: other code asks for picture.materials.<name> and never builds… |
 | picture/palette.js | 12 | @ts-check skirmish palette: the picture's colors and key values, one copy for the whole game; light… |
-| picture/units.js | 55 | @ts-check How skirmish's units look, and the shots and explosions. Plain three.js: simple shapes fo… |
+| picture/units.js | 69 | @ts-check How skirmish's units look, and the shots and explosions. Plain three.js: simple shapes fo… |
 | sim/content.js | 18 | skirmish's units, weapons and armor: plain numbers (meters, seconds, degrees). loadContent() checks… |
 | sim/index.js | 23 | skirmish's match builder: the ONE place a match is made. Single player, online play (the relay's se… |
 | sim/map.js | 21 | skirmish's battlefield as sim data. Heights block sight (take the hills!); blocked cells are impass… |

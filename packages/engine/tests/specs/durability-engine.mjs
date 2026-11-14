@@ -1,6 +1,6 @@
 // Durability guards (docs/plans/done/2026-11-02-durability-fixes.md items 4, 5, 8, 9; item 3 is in threads.mjs). Same format as the other files here.
 // Each item is a "do not bypass" check: dispose gives the WebGL context back, adaptive resolution judges frame cost (startup, compiles and a 30 Hz
-// display never lower it), a silent net link closes through the heartbeat, a missing sound names its path with asset-load, an uncaught rejection is seen.
+// display never lower it), a missing sound names its path with asset-load, an uncaught rejection is seen.
 
 export const specs = [
   {
@@ -61,36 +61,6 @@ export const specs = [
       check('a released canvas refuses a new engine with canvas-released', r.reuse === 'canvas-released', JSON.stringify(r));
       check('unknown dispose option fails with dispose-options', r.badOpt === 'dispose-options', JSON.stringify(r));
       check('a renderer the game passed in keeps its context', r.gameKept, JSON.stringify(r));
-    },
-  },
-  {
-    name: 'durability-engine: net heartbeat -- a silently dead link emits close on the client and leave on the host; a healthy quiet link stays up (net test page)',
-    url: '/tests/net/',
-    async run({ check, ev }) {
-      const r = await ev(async () => {
-        const { fakeNetwork, makeCoop } = threedogCoop;
-        const wire = fakeNetwork({ manual: true, latency: 40 });
-        const H = await makeCoop('host', wire.host());
-        const t = wire.connect({ heartbeat: 500 });
-        const A = await makeCoop('client', t);
-        const go = ms => { for (let s = 0; s < ms; s += 1000 / 60) { wire.advance(1000 / 60); for (const e of [H, A]) e.step(1 / 60, { render: false }); } };
-        const closes = []; A.events.on('net:close', () => closes.push(wire.now));
-        go(1000);
-        const up = A.net.connected && H.net.peers.length === 1;
-        go(5000);
-        const stillUp = A.net.connected && closes.length === 0;
-        t.cut(); const cutAt = wire.now;
-        go(3000);
-        const out = { up, stillUp, closes: closes.length, after: closes[0] - cutAt, peers: H.net.peers.length, connected: A.net.connected };
-        A.net.reconnect(wire.connect({ key: t.key, heartbeat: 500 })); go(1500);
-        out.again = A.net.connected && H.net.peers.length === 1;
-        H.dispose(); A.dispose();
-        return out;
-      });
-      check('connected, and still connected after 5 s with pings only', r.up && r.stillUp, JSON.stringify(r));
-      check('silent link: exactly one close on the client, 1-2.1 s after the cut (3 heartbeats after the last pong)', r.closes === 1 && r.after >= 1000 && r.after <= 2100 && !r.connected, JSON.stringify(r));
-      check('the host drops the peer too', r.peers === 0, JSON.stringify(r));
-      check('engine.net.reconnect with the old key brings it back', r.again, JSON.stringify(r));
     },
   },
   {

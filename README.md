@@ -23,6 +23,8 @@
   <a href="#what-it-can-do">What it can do</a> · <a href="#quick-start">Quick start</a> · <a href="#minimal-code-sample">Code sample</a> · <a href="#background">Background</a> · <a href="#design-philosophy">Philosophy</a> · <a href="#architecture">Architecture</a> · <a href="#modules">Modules</a> · <a href="#examples">Examples</a> · <a href="#tools-for-ai">AI tools</a> · <a href="#performance-and-partitioning">Performance</a> · <a href="#status-and-known-limits">Status</a> · <a href="#docs">Docs</a> · <a href="#faq">FAQ</a>
 </p>
 
+> **This fork is an RTS engine.** It adds a deterministic lockstep simulation for real-time strategy games (C&C, StarCraft and World in Conflict style) with online multiplayer: `packages/rts` (guide: [RTS.md](packages/rts/docs/RTS.md)), the `rts()` engine module ([recipe 67](packages/engine/docs/recipes/67-rts.md)) and `npx threedog new-game my-rts --rts` for a playable start. Everything below describes the engine underneath.
+
 Threedog lets an AI build games in plain JavaScript and three.js. The engine handles time, input, assets, saves, physics and world management, and it comes with tools to run, check and debug a project. A project can start from an empty scene and add modules as it needs them.
 
 The look and the rules belong to the project. Materials, lights, models and scene objects are three.js objects, and the engine only handles what several systems must agree on. An AI can then find the right interface, verify its own result, and still reach for three.js directly when a request gets complicated.
@@ -278,7 +280,6 @@ Terrain, vegetation and weather keep data apart from drawing. A project can keep
 | Music | Music playback and switching | [music](packages/engine/modules/music/) |
 | Ambience | Ambient sound | [ambience](packages/engine/modules/ambience/) |
 | Debug | Dev debug panel and inspection entry | [debug](packages/engine/modules/debug/) |
-| Net | Experimental host-authoritative co-op sync, with known problems | [net](packages/engine/modules/net/) |
 
 For daily use, look up the entry in the [task index](packages/engine/docs/AI.md), then read the [module API](packages/engine/docs/api/) and the matching recipe.
 
@@ -381,7 +382,7 @@ This table lists only what has actually been run:
 
 Known limits:
 
-- **Multiplayer:** `engine.net` is experimental and has known problems. 1.0 makes no promise about its behavior.
+- **Multiplayer:** the engine has no netcode of its own; multiplayer is the lockstep netcode in [packages/rts](packages/rts/docs/RTS.md).
 - **Video memory:** destroying and re-creating the engine again and again adds about 0.2 MB of video memory each time. Normal play does not.
 - **WebGPU:** a throw in a game's own `onBeforeRender` stops the picture, and the error is reported. This is a three.js limit.
 - **Pathfinding:** the first path for a new body size builds its navmesh on the main thread, which can hitch for about 0.3 s on a large level; asking once during loading avoids it. A `nav({ crowd: true })` crowd runs on one mesh only.

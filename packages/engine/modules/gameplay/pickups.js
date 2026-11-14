@@ -46,11 +46,10 @@ export class Pickups {
     /** Reach of pickups that set no radius (meters); auto pickups are taken within it */ this.radius = radius;
     /** @internal pickups float, spin and have a model only within this distance of the stream sources */ this.showDistance = showDistance;
     /**
-     * Who can walk into auto pickups: () => actor ids. Default: engine.actor and every seat's actor, plus every net peer on a host; none on a net client (the host takes them for it,
-     * from the positions it is sent). A game with NPCs that collect coins returns their ids too.
+     * Who can walk into auto pickups: () => actor ids. Default: engine.actor and every seat's actor. A game with NPCs that collect coins returns their ids too.
      * @type {(e: any) => string[]}
      */
-    this.takers = takers ?? (e => e.net?.role === 'client' ? NO_ACTORS : [e.actor, ...seatActors(e), ...(e.net?.peers.map(p => p.actor) ?? NO_ACTORS)]);
+    this.takers = takers ?? (e => [e.actor, ...seatActors(e)]);
     // world id -> what cannot go in saved data: the game's mesh, a give function. Spawning the same id again (content / setup code on load) sets them again
     /** @internal */ this._live = new Map();
     // the reach query around each taker uses the largest auto radius in the world, read from the records rather than from spawn calls:
@@ -318,7 +317,7 @@ function defineTake(e, ctx, pk) {
 const PICKUP_PARAMS = {
   radius: { type: 'number', default: 2, min: 0, desc: 'reach of pickups that set no radius (meters); auto pickups are taken within it' },
   showDistance: { type: 'number', default: 60, min: 0, desc: 'pickups have a model, float and spin only within this distance of the stream sources (meters)' },
-  takers: { type: 'any', optional: true, desc: 'e => actor ids that walk into auto pickups (default engine.actor and the seats, plus net peers on a host)' },
+  takers: { type: 'any', optional: true, desc: 'e => actor ids that walk into auto pickups (default engine.actor and the seats)' },
   color: { type: 'any', default: DEFAULT_COLOR, desc: 'color of the placeholder box and geometry-only models when the pickup and its item set none' },
   size: { type: 'number', default: 0.25, min: 0, desc: 'edge of the placeholder box (meters)' },
   lift: { type: 'number', default: 0.4, desc: 'height above the ground a pickup floats at (meters)' },
@@ -356,7 +355,7 @@ export function pickups(opts = {}) {
   let pk = null;
   return {
     content: { pickups: PICKUP_CONTENT },
-    name: 'pickups', skipKind: 'exact', type: 'rules', label: 'Pickups', params: PICKUP_PARAMS, options: o, requires: ['world'], optional: ['interactions', 'inventory', 'net'], stage: 'gameplay',
+    name: 'pickups', skipKind: 'exact', type: 'rules', label: 'Pickups', params: PICKUP_PARAMS, options: o, requires: ['world'], optional: ['interactions', 'inventory'], stage: 'gameplay',
     noSkip: 'auto pickups are spatial; respawn follows the game clock',
     install(e, ctx) {
       pk = new Pickups(e, o, ctx); defineTake(e, ctx, pk);   // o: the schema defaults are filled in, the class repeats none

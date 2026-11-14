@@ -64,7 +64,6 @@ A row or `threedog how` -> recipe -> `api/<module>.md`. Also: `CONVENTIONS.md`, 
 | New game / continue, scene flow, fades, pause for a menu, cutscenes | `engine.session`, `engine.flow`, `engine.freeze`, `engine.timeline` | 07-flow-scenes-pause.md §4 |
 | Slow or speed up time, bullet time | `engine.mod('clock.rate')` | 55-mods-time-wrap.md §"Time channels" |
 | Time of day, day / night, seasons | `engine.calendar` | 08-weather-sky.md §4, 06-clock-events.md |
-| Multiplayer | `engine.net` | 27-net.md §1 |
 
 ### Characters, input, UI
 | To do | Use | Recipe |

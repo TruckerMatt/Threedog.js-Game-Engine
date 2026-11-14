@@ -1475,7 +1475,7 @@ export interface PickupOptions {
 export interface Pickups {
   /** Reach of pickups that do not set their own (meters) */
   radius: number;
-  /** Who walks into auto pickups: default engine.actor plus net peers on a host, none on a client */
+  /** Who walks into auto pickups: default engine.actor plus the seats' actors */
   takers: (e: Engine) => string[];
   /**
    * The three.js material of every placeholder box and geometry-only model. Set it to swap all of them at once; used as given. A pickup with its own color or a
@@ -1500,7 +1500,7 @@ export interface PickupsOptions {
   radius?: number;
   /** Pickups have a model, float and spin only within this distance (meters) of the stream sources, default 60 @experimental */
   showDistance?: number;
-  /** Who walks into auto pickups (actor ids); default engine.actor, plus net peers on a host */
+  /** Who walks into auto pickups (actor ids); default engine.actor plus the seats' actors */
   takers?: (e: Engine) => string[];
   /** Color of the placeholder box and geometry-only models when the pickup and its item set none, default 0xcccccc */
   color?: ColorLike;

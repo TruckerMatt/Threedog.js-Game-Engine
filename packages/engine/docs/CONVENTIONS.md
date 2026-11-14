@@ -113,7 +113,6 @@ into, or a convenience for after.
 | Next map, next stage, change level | `engine.level.load(name)` (recipe 10) | a fade around it: `engine.flow` (recipe 07) |
 | Background song that changes in a fight or a place | `engine.music`, rules as data (recipe 31) | one track: `engine.audio.play` |
 | An enemy walks around obstacles to reach someone | `engine.characters.findPath` on `engine.nav` (recipe 12) | a search of your own is fine: it reads `engine.collision.walkable` |
-| Two people play together over the internet | `engine.net` (recipe 27) | |
 | Take a snapshot in the game and keep it | `photo()`, `engine.photo.take()` | the raw image: `renderer.domElement.toBlob` |
 | A cutscene: steps in order; tween a value | `engine.timeline`, `engine.timeline.tween(target, to)` (recipe 07) | one delay: `engine.clock.after` |
 | Something happens when the player enters a zone | `engine.triggers` (recipe 20) | a press inside it: `engine.interactions` |
@@ -338,7 +337,7 @@ Inside the engine a failure takes one of three forms, so every one reaches the r
 - **Effects still moving with three.js**: all of `threedog/tsl` and `@threedog/post-effects/tsl`.
 - **Names nothing uses yet**: a public name no game, recipe, example or template used at 0.8 stays marked until one does; `docs/api-surface.txt` lists them.
 - **Coordination no test game has used**: `engine.stacks`, `engine.wrap`, `time.channel / channels`.
-- **Systems still settling**: `net()`, `engine.threads`, `grids()`, `hlod()`, `swarm()`, `stream.source / teleport / addReadyCheck / sources`, `post.own / antialias`, `world.simulate({ worker })`, `terrain.edit`, `ops.guard / allow`, `terrainDraw`, `vegetationDraw`, `weatherDraw`, `engine.bakeProbes / loadProbes / loadLightmap`.
+- **Systems still settling**: `engine.threads`, `grids()`, `hlod()`, `swarm()`, `stream.source / teleport / addReadyCheck / sources`, `post.own / antialias`, `world.simulate({ worker })`, `terrain.edit`, `ops.guard / allow`, `terrainDraw`, `vegetationDraw`, `weatherDraw`, `engine.bakeProbes / loadProbes / loadLightmap`.
 - **Flat content**: an entry's `source`, `content stamp`, `content capture`.
 - **Tuning and readings**: `engine.moduleOrder / moduleStates`, `player.saveMotion / loadMotion`, `jobs.loadingMs / maxSteps / slowStepMs`, `stream.unloadFactor`, `batching.held`, `world.steps`, `level.heightfield`.
 - **Commands.** Only the `--json` and MCP shapes are an interface; printed text keeps changing for AI readers. An error's `code` string is frozen, its message is not.

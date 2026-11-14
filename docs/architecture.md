@@ -456,7 +456,6 @@ The test runner finds tests by itself (`packages/tools/lib/specs.mjs`): every `t
 | `lights/` | `lightPool` (picture) | Many light sources on a few real lights | | |
 | `music/` | `music` (picture) | Background music | | `music` |
 | `nav/` | `nav` (world) | Recast navmesh, generated after a level loads, one per body size asked for (`nav.mesh(radius)`; the worker mirrors the sizes its batches use) | `nav` | |
-| `net/` | `net` (net) | Optional host-authoritative co-op sync, no prediction | | |
 | `particles/` | `particles` (picture) | One effect is one `THREE.Points` over a ring buffer | `particles` | |
 | `photo/` | `photo` (tool) | A sharper one-frame shot, then restore | | |
 | `rigid/` | `rigid` (world) | Rapier bodies, ragdolls, vehicles, buoyancy | `rigid`, `collider3d` | `rigid` |
@@ -497,4 +496,4 @@ Three levels, in the order to try them. A parameter is an option, a rule or a sh
 | Input | Bindings, contexts, gates, seats | Not a module | Contexts per seat: there is one stack |
 | Saves | Parts, versions, `migrate` | Not a module: storage goes through `core/saves/SaveStore.js` | The state transaction: every replacement enters `stateReplace.js` |
 | Content | Sections, fields, packs | The owner of a section, and its format goes with it | The `validate`, `prepare`, `commit` order |
-| Multiplayer | `net` options, transport | Not a slot | Prediction, anti-cheat and competitive play: `net` is host-authoritative |
+| Multiplayer | `packages/rts` lockstep netcode | Not a slot | Multiplayer outside the RTS package: the engine has no netcode of its own |

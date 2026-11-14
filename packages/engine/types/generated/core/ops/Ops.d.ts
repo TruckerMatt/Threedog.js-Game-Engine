@@ -194,17 +194,6 @@ export class Ops {
      */
     guard(where: string): void;
     /**
-     * Send every op to someone else instead of running it here (a multiplayer client: the host decides). fn(def, args, opts) returns the result to
-     * hand back, or null to run the op locally after all. While routed, a write outside an op or allow() is reported even in fixed steps (only the
-     * host changes game state). One router at a time; remove() runs ops locally again. Public so a transport module needs no ops internals.
-     * @param {(def: any, args: any, opts: any) => any} fn
-     * @returns {{ remove(): void }}
-     * @example const r = engine.ops.route((d, args) => d.name.startsWith('chat.') ? null : sendToHost(d.name, args));   // r.remove() on disconnect
-     */
-    route(fn: (def: any, args: any, opts: any) => any): {
-        remove(): void;
-    };
-    /**
      * Put a refused request into the op history (describe().ops, ops.history) without running it: a host refusing a peer's op keeps the refusal visible
      * next to the ops that ran. The op must be defined.
      * @param {string} name

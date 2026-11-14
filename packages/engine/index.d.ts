@@ -145,9 +145,6 @@ export { water } from './types/generated/modules/water/Water';
 // Migrated: world() is generated from the JSDoc in modules/world/index.js
 export { world } from './types/generated/modules/world/index';
 export type { World, WorldRecord } from './types/generated/modules/world/World';
-// Migrated: net() and its transports are generated from the JSDoc in modules/net/
-export { net, fakeNetwork, webSocket } from './types/generated/modules/net/index';
-export type { Net } from './types/generated/modules/net/Net';
 // grids() is generated from the JSDoc in modules/grid/index.js
 export { grids } from './types/generated/modules/grid/index';
 export type { Grids } from './types/generated/modules/grid/index';

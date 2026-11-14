@@ -5,7 +5,6 @@ import type {
 } from './world';
 import type { Rts, RtsFireEvent, RtsHitEvent, RtsUnitEvent } from './gameplay';
 import type { World } from './generated/modules/world/World';
-import type { Net } from './generated/modules/net/Net';
 import type { PostEffect } from './generated/render/PostFX';
 import type { Grids } from './generated/modules/grid/index';
 import type { Collision, RigidBodies, Collider3D, CameraRig, CameraKind, CameraShotEvent, Animator, AnimatorOptions, Vehicle, Rideable } from './physics';
@@ -227,18 +226,6 @@ export interface EventMap extends GameEvents {
   'world:remove': [{ id: string; kind: string }];
   /** world finished loading a save (the data is now the save's; caches holding a rec object should refresh on this, count is the record count after loading) */
   'world:load': [{ count: number }];
-  /** Host (net): a peer connected; actor is its world record / container id */
-  'net:join': [{ peer: number; actor: string }];
-  /** Host (net): a peer disconnected (its bag stays; a reconnect with its key gets the same actor) */
-  'net:leave': [{ peer: number; actor: string }];
-  /** Client (net): connected to the host (the first snapshot follows) */
-  'net:open': [{}];
-  /** Client (net): connection lost */
-  'net:close': [{}];
-  /** Client (net): host state applied (full: a whole snapshot, else a diff); redraw UI from state here */
-  'net:sync': [{ tick: number; full: boolean }];
-  /** Client (net): the host's answer to an op request (seq from ops.run's return value; tick is the host's), sent after the state it caused */
-  'net:result': [{ seq: number; name: string; ok: boolean; code: string | null; value?: any; tick: number }];
   /** A gameplay error: in development / testing gameplay is frozen; a release build keeps running and sends it once per site (engine.error holds the first; error severity levels, see engine.error) */
   'engine:error': [EngineError];
   /** A picture or ui module errored and was disabled (the game continues) */
@@ -1951,8 +1938,6 @@ export declare class Engine {
   water?: Water;
   /** World data (world() module): things that must be saved, survive level changes and keep changing while far away; the model is built only when nearby */
   world?: World;
-  /** Co-op multiplayer (net() module): host authority, clients mirror the state and request ops; see recipes/27-net.md @experimental */
-  net?: Net;
   /** Placement grids: world <-> cell, occupancy derived from world records, per-cell layers, placement preview (grids() module) @experimental */
   grids?: Grids;
   /** Lightweight collision (collision() module): no clipping while walking, the camera is not blocked */

@@ -5,7 +5,7 @@ Goal: test every engine module and every `threedog` command group, to see whethe
 Rules for the runner
 - The AI gets only the "Prompt" column, plus the normal new-project entry (AI.md). No API names, no hints. Each task starts in a fresh workspace unless it says "continue".
 - "Pass line" is judged by a script (`threedog verify`, `describe`, `eval`, exit code) or one screenshot with a stated thing to see. Time limit includes reading docs.
-- Out of scope: mobile, multiplayer (engine.net, `threedog relay`, fakeNetwork, webSocket), see the end of the coverage table.
+- Out of scope: mobile, multiplayer (the RTS lockstep netcode in packages/rts has its own tests), see the end of the coverage table.
 - Record each run as one line in `docs/testing/runs.md`; failures go to the engine-fix list by root cause (not one patch per row).
 - Source of coverage: `threedog api-count --json` (1782 items: 156 engine members, 473 sub-object members, 346 module APIs, 54 CLI commands), `packages/engine/docs/API.md`, `COMMANDS.md`.
 
@@ -165,7 +165,7 @@ Every module (API.md) and every command group (COMMANDS.md) has a row.
 | ambience | M27 | nav | M28 |
 | hlod | M29 | lightPool | M30 |
 | content | M31 C09 | flow | M32 |
-| hud | M33 | net | not tested (multiplayer out of scope) |
+| hud | M33 | | |
 | exports threedog (helpers) | X04 | threedog/tsl | X01 |
 | @threedog/post-effects | X02 | terrain-noise | X03 |
 | dev, check, types | C01 | test | C32 |
@@ -184,10 +184,9 @@ Every module (API.md) and every command group (COMMANDS.md) has a row.
 | map | C29 | stress, perf | C30 |
 | build, preview | C31 | js --file | C33 |
 | session, eval, snap, reload | used inside most C rows; no own row | loading | S06 |
-| relay | not tested (multiplayer) | | |
 
 Not testable or not worth a row
-- `engine.net`, `threedog relay`, `fakeNetwork`, `webSocket`: multiplayer, out of scope.
+- Multiplayer: the engine has no netcode; the RTS lockstep netcode (`packages/rts`) has its own tests.
 - Touch controls (`touchButton`) and phone sizes: mobile, out of scope.
 - `npm run perf` (plain three.js vs engine comparison): engine-maintainer measurement, not an AI task; C30 covers `stress`.
 - Sound itself cannot be heard by a script; S07, M19, M27 judge bus state and played-event records only.

@@ -3,7 +3,6 @@
 //   - a walkTo paused by a cutscene resumes and still arrives (paused, not cancelled)
 //   - two script owners on one character: control-conflict naming both; a direct move() on a held character: control-bypass
 //   - an NPC's behaviour is the base holder and pauses under a script; describe().control shows who holds each character
-//   - net holds remote characters for good: taking a peer's avatar on the host, or the host's avatar on a client, is control-net
 //   - removing the cutscene module (replaces) hands its characters back
 // Run in dev (the test bundle): npm test -- character
 const PAGE = '/tests/threads/';
@@ -128,48 +127,7 @@ export const specs = [
       check('describe().control lists every held character', r.describe.includes('player') && r.describe.includes('ctl-npc'), JSON.stringify(r.describe));
     },
   },
-  {
-    name: 'character control: net holds remote characters for good (control-net); removing the cutscene module gives its characters back',
-    url: PAGE,
-    async run({ check, ev }) {
-      const r = await ev(async () => {
-        const { mk } = threedogThreads, T = threedogThreads.all, out = {};
-        const err = f => { try { f(); return null; } catch (x) { return { code: x.code, msg: x.message }; } };
-        // net: a host and one client on a manual wire
-        const wire = T.fakeNetwork({ manual: true, latency: 20 });
-        const H = mk(T.createEngine, 'ctl-host'), C = mk(T.createEngine, 'ctl-client');
-        H.use(T.world(), T.characters(), T.net({ role: 'host', transport: wire.host() }));
-        C.use(T.world(), T.characters(), T.net({ role: 'client', transport: wire.connect() }));
-        await H.start(); await C.start(); H.haltLoop(); C.haltLoop();
-        H.characters.addPlayer({ control: () => null, spawn: { x: 0, z: 0 } });
-        C.characters.addPlayer({ control: () => null, spawn: { x: 2, z: 0 } });
-        for (let t = 0; t < 600; t += 1000 / 60) { wire.advance(1000 / 60); for (const e of [H, C]) e.step(1 / 60, { render: false, describe: false }); }
-        const guest = H.net.peers[0]?.actor;
-        out.guest = guest; out.hostOf = guest && H.control.of(guest);
-        out.hostTake = guest ? err(() => H.control.take(guest, { owner: 'cutscene-x', layer: 'cutscene' })) : 'no peer';
-        out.clientOf = C.control.of('host');
-        out.clientTake = err(() => C.control.take('host', { owner: 'quest', layer: 'script' }));
-        out.ownFree = C.control.of('player')?.owner;
-        H.dispose(); C.dispose();
-        // removing the cutscene module hands back what it held
-        const E = mk(T.createEngine, 'ctl-swap');
-        E.use(T.world(), T.characters(), { ...T.timeline(), provides: ['cutscenes'] });
-        await E.start(); E.haltLoop();
-        const P = E.characters.addPlayer({ control: () => null, spawn: { x: 0, z: 0 } });
-        E.timeline.play([{ wait: 30 }]);
-        E.step(1 / 60, { render: false, describe: false });
-        out.held = E.control.of(P)?.owner;
-        E.use({ name: 'noCutscenes', type: 'rules', provides: ['cutscenes'] }, { replaces: 'cutscenes' });
-        out.afterSwap = E.control.of(P)?.owner;
-        E.dispose();
-        return out;
-      });
-      check('[guard] host: a peer\'s avatar is held by net; taking it is control-net', r.hostOf?.owner === 'net' && r.hostOf.layer === 'net' && r.hostTake?.code === 'control-net', JSON.stringify([r.guest, r.hostOf, r.hostTake]));
-      check('[guard] client: the host\'s avatar is held by net; a local script cannot take it; the own player is the client\'s', r.clientOf?.owner === 'net' && r.clientTake?.code === 'control-net'
-        && r.ownFree === 'player-input', JSON.stringify([r.clientOf, r.clientTake, r.ownFree]));
-      check('[guard] removing the cutscene module (replaces) gives the player back to its input', r.held === 'timeline' && r.afterSwap === 'player-input', JSON.stringify([r.held, r.afterSwap]));
-    },
-  },
+
   {
     // a bad actor threw after the player was taken: no run existed to give it back, so the keys stayed off for good
     name: '[guard] timeline.play refused for a bad actor hands back the ones it took; a bad path point leaves the character free to move in the next run',

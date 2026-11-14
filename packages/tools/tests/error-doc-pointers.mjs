@@ -48,7 +48,6 @@ const PAGE_LEVEL = {
   'grids-misuse': 'covers many different grids() mistakes',
   'content-layer-ignored': 'collide.layer is mentioned in passing',
   'level-node': 'level nodes are described in several sections',
-  'net-option': 'net() options are described in the install and security sections together',
   'sky-option': 'sky options are spread over the page',
   'terrain-option': 'terrain options are spread over the page',
   'water-option': 'water options are spread over the page',

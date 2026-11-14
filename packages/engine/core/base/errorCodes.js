@@ -245,7 +245,7 @@ export const ERROR_CODES = {
     fix: "Two owners want the same character on the same control layer, so nothing says which one steers, and the first keeps it (every build). " +
       "End the old one first (its handle.remove()), or take another layer: base < script < cutscene (higher pauses lower)." },
   'control-net': {
-    docs: ['recipes/57-control.md §"Who takes what"', 'recipes/27-net.md §4'],
+    docs: ['recipes/57-control.md §"Who takes what"'],
     fix: "That character is driven by another machine (net holds its control for good). Change it where it is driven: run an op the host runs " +
       "(engine.ops.run), or steer the character that is yours (engine.player)." },
   'control-bypass': {
@@ -420,9 +420,6 @@ export const ERROR_CODES = {
   'music-track': {
     docs: ['api/music.md'],
     fix: 'A music track is defined twice or has neither url nor stems. Define each track once with { url } or { stems }.' },
-  'net-option': {
-    docs: ['recipes/27-net.md', 'api/net.md'],
-    fix: 'net() needs role \'host\' or \'client\' and a transport; reconnect() is for clients only.' },
   'rigid-misuse': {
     docs: ['recipes/11-vehicles.md §3', 'api/rigid.md'],
     fix: "The message says which: an id already used by another body or vehicle (give each its own id); a mesh that another body or a character already owns (one object, one physics owner: remove the first, or give the second its own object); joints lost when newGame / a load rebuilt the physics world (re-create them in a rigid:rebuilt listener, recipe 11 section 3 \"Joints\"); rigid.ragdoll() got something it cannot drive (a skinned character out of its vehicle, with the bones named when they cannot be read); or a moving body left the terrain colliders and froze (raise rigid({ terrainRing }) if it must keep moving there, recipe 11 section 3)." },

@@ -46,7 +46,6 @@ Type = what the module may own (core/engine/moduleTypes.js): world, picture, act
 | inventory | rules | modules/gameplay/Inventory.js |
 | lightPool | picture | modules/lights/index.js |
 | nav | world | modules/nav/index.js |
-| net | net | modules/net/index.js |
 | photo | tool | modules/photo/Photo.js |
 | quests | rules | modules/gameplay/Quests.js |
 | rigid | world | modules/rigid/RigidBodies.js |
@@ -89,7 +88,6 @@ Type = what the module may own (core/engine/moduleTypes.js): world, picture, act
 - lights/ Light pool: many sources, a few real lights — slots.js, sources.js
 - music/ Background music module entry — Music.js, rules.js
 - nav/ Navmesh (Recast): generated after a level loads; engine.charact… — navPath.js
-- net/ net() module: optional co-op multiplayer, host-authoritative st… — Client.js, Host.js, Net.js, sync.js, transports.js
 - particles/ Particles module: dust, falling leaves, splashes, chimney smoke… — Particles.js, effect.js, lit.js, shaders.js
 - photo/ Photo mode: a sharper shot, then restore — Photo.js, pathTrace.js
 - rigid/ Real physics (Rapier): objects that topple, roll, get pushed an… — RigidBodies.js, Vehicles.js, collider3d.contract.js, ragdoll.js, ragdollBones.js, refresh.js, sync.js
@@ -199,12 +197,6 @@ Type = what the module may own (core/engine/moduleTypes.js): world, picture, act
 | module:restored | core/engine/modules.js | content |
 | music:change | music | — |
 | music:stinger | music | — |
-| net:close | net | — |
-| net:join | net | — |
-| net:leave | net | — |
-| net:open | net | — |
-| net:result | net | — |
-| net:sync | net | — |
 | page:blur | core/engine/page.js | core/input/Input.js |
 | page:contextlost | core/engine/page.js | — |
 | page:contextrestored | core/engine/page.js | sky |
@@ -319,7 +311,6 @@ Modules declare actions without keys; the game binds them (createEngine({ bindin
 - modules/lights/index.js: module.* (1)
 - modules/music/Music.js: module.* (1)
 - modules/nav/index.js: module.* (1)
-- modules/net/index.js: module.* (1)
 - modules/particles/Particles.js: module.* (1)
 - modules/photo/Photo.js: module.* (1), photo.* (1)
 - modules/rigid/RigidBodies.js: module.* (1)

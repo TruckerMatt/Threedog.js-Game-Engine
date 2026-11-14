@@ -77,7 +77,6 @@ export { THREE, Engine };
 export { Animator } from './core/assets/Animator.js';
 export { terrain, vegetation, calendar, sky, weather, water, collision, rigid, followCamera, characters, interactions, dialogue, inventory, pickups, quests, photo, ambience, debug,
   level, triggers, particles, swarm, rts, settings, music, firstPersonCamera, fixedCamera, rtsCamera, timeline, nav, hlod, lightPool, content, flow, hud, world, grids };
-export { net, fakeNetwork, webSocket } from './modules/net/index.js';
 export { screenToGround } from './core/scene/screenToGround.js';
 export { ease } from './core/base/easing.js';
 export { sampleGrid } from './core/scene/grid.js';   // a grid of numbers (height, moisture, density, walkable) as a function (x, z) -> value; assets.gridFromImage reads one from an image. 'threedog/grid' is the same file without three.js (workers, tests)

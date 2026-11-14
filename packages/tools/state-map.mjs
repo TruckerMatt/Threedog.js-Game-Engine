@@ -75,7 +75,7 @@ async function moduleRows() {
   const rows = [];
   await withDomStub(async () => {
     for (const [name, m] of Object.entries(metadata.modules)) {
-      const made = (await load(m.file))[m.call]?.(name === 'net' ? { role: 'host', transport: {} } : undefined);
+      const made = (await load(m.file))[m.call]?.(undefined);
       const def = [].concat(made).find(d => d?.name === name);   // a factory can return a world module and its picture module together
       const lines = hookLines(m, name);
       const hooks = HOOKS.filter(h => typeof def?.[h] === 'function' || lines[h]).map(h => `${h}${lines[h] ? `:${lines[h]}` : ':unknown'}`);

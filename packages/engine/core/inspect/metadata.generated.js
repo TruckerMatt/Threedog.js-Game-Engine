@@ -1414,112 +1414,6 @@ export const metadata = {
     ]
    }
   },
-  "net": {
-   "call": "net",
-   "file": "packages/engine/modules/net/index.js",
-   "label": "Multiplayer",
-   "needs": [
-    "role",
-    "transport"
-   ],
-   "type": "net",
-   "provides": [],
-   "requires": [],
-   "handRolled": "none: an own connection is a plain WebSocket, used on purpose",
-   "stage": "late",
-   "before": [],
-   "after": [],
-   "optional": [
-    "world",
-    "inventory"
-   ],
-   "params": {
-    "role": {
-     "type": "any",
-     "optional": true
-    },
-    "transport": {
-     "type": "any",
-     "optional": true
-    },
-    "sync": {
-     "type": "any",
-     "optional": true
-    },
-    "syncEvery": {
-     "type": "any",
-     "optional": true
-    },
-    "keepAlive": {
-     "type": "any",
-     "optional": true
-    },
-    "rate": {
-     "type": "any",
-     "optional": true
-    },
-    "burst": {
-     "type": "any",
-     "optional": true
-    },
-    "maxSpeed": {
-     "type": "any",
-     "optional": true
-    },
-    "posEvery": {
-     "type": "any",
-     "optional": true
-    },
-    "actorFor": {
-     "type": "any",
-     "optional": true
-    },
-    "actorFields": {
-     "type": "any",
-     "optional": true
-    },
-    "avatarFields": {
-     "type": "any",
-     "optional": true
-    },
-    "interpolate": {
-     "type": "any",
-     "optional": true
-    },
-    "avatar": {
-     "type": "any",
-     "optional": true
-    },
-    "onJoin": {
-     "type": "any",
-     "optional": true
-    },
-    "onLeave": {
-     "type": "any",
-     "optional": true
-    }
-   },
-   "page": true,
-   "documented": false,
-   "names": [
-    "reconnect",
-    "role",
-    "actor",
-    "connected",
-    "peers",
-    "pending",
-    "stats"
-   ],
-   "sections": [],
-   "saves": [],
-   "time": {
-    "kind": "none",
-    "hooks": [
-     "fixed",
-     "frame"
-    ]
-   }
-  },
   "particles": {
    "call": "particles",
    "file": "packages/engine/modules/particles/Particles.js",
@@ -1659,8 +1553,7 @@ export const metadata = {
    "after": [],
    "optional": [
     "interactions",
-    "inventory",
-    "net"
+    "inventory"
    ],
    "params": {
     "radius": {
@@ -1680,7 +1573,7 @@ export const metadata = {
     "takers": {
      "type": "any",
      "optional": true,
-     "desc": "e => actor ids that walk into auto pickups (default engine.actor and the seats, plus net peers on a host)",
+     "desc": "e => actor ids that walk into auto pickups (default engine.actor and the seats)",
      "docType": "(e: Engine) => string[]"
     },
     "color": {
@@ -1997,12 +1890,12 @@ export const metadata = {
    "sections": [],
    "saves": [],
    "time": {
-    "kind": "none",
+    "kind": "step",
     "hooks": [
      "fixed",
-     "frame"
-    ],
-    "noSkip": "the match runs in real time on its driver; a time jump does not advance it"
+     "frame",
+     "skip"
+    ]
    }
   },
   "settings": {

@@ -18,14 +18,14 @@ A hidden mesh is only hidden: a collider it had is yours to remove in `onUse`. T
 | Use | When |
 |---|---|
 | `interactions.add(mesh, { once, counter })` | a mesh you already have, a number on screen, nothing to carry or spend |
-| `pickups.spawn` (below) | it goes in a bag, respawns, is taken by walking into it (`auto`), is laid out in `content/`, or a net host must decide who got it |
+| `pickups.spawn` (below) | it goes in a bag, respawns, is taken by walking into it (`auto`), is laid out in `content/`, or something else must decide who got it |
 
 ## Items and pickups
 Modules needed: `inventory()` (its window is the UI part `inventory`; the open key is the game's: `presets.bindings.inventory` is I / gamepad Y,
 `inventory: []` none) + `pickups()` (things lying on the ground; needs `world()`, which `openWorld()` includes) +
 `interactions({ ...presets.interactions.nearest })` (walk up to a pickup and press E). "Already picked up / how long until it grows back" is data in world and is saved with the game.
 
-**Every actor has its own bag**: the container whose id is the actor's id (`inventory.of(actor)`): `'player'` for the local user, each net peer's actor
+**Every actor has its own bag**: the container whose id is the actor's id (`inventory.of(actor)`): `'player'` for the local user, 
 id on the host, an NPC's id. "The player inventory" (`inventory.add / count / list ...`) is the bag of `engine.actor`. Whoever takes a pickup gets it in
 their own bag; inside an op use `inventory.of(ctx.actor)`, never a fixed `'player'`. A pickup can also give an instant effect instead of an item
 (`give: (e, { actor }) => ...`), which needs no inventory at all.
@@ -68,7 +68,7 @@ engine.pickups.spawn(p, { give: (e, { actor }) => e.ops.run('hp.heal', { n: 25 }
 engine.events.on('pickup:take', ({ actor, x, z }) => engine.particles?.emit('dust', { x, y: engine.surface(x, z), z }, { count: 10 }));  // also item:add / item:remove (with container, actor) / item:use
 ```
 The default reach is `pickups({ radius: 2 })`; each pickup can set its own `radius`. Reach is a sphere around the pickup, so a coin on a ledge less than `radius` above the player is taken from under it: give it a smaller `radius`. Taking one is the op `pickup.take { id }` (net: `'peer'`): the
-interact key, auto pickups, a net client's press (sent to the host, which puts the item into that peer's bag) and tests all run it as `ctx.actor`.
+interact key, auto pickups and tests all run it as `ctx.actor`.
 A give function is not saved data: code that spawns one spawns it again on load (content and setup code do); a runtime drop gives an item id.
 
 ## Single pieces: durability, upgrade level, ammo in the magazine, freshness

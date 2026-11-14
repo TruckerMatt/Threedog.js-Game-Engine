@@ -1,9 +1,9 @@
 // "Actor everywhere" guards (docs/plans/done/2026-11-02-genericity-fixes.md items 2 and 4): nothing in interactions, pickups, containers, content effects or
-// triggers may assume one player. Each case has two actors (the local 'player' and a second one: a world record standing in for an NPC or a net peer,
-// or real net peers) and checks that each one's action lands on that one. Same format as the other files here.
+// triggers may assume one player. Each case has two actors (the local 'player' and a second one: a world record standing in for an NPC or another player)
+// and checks that each one's action lands on that one. Same format as the other files here.
 // Do not bypass: if any of these fails, some path went back to a fixed 'player' / engine.player / engine.actor.
 
-// the second actor: a plain world record with a position (what a net peer's avatar on the host, or an NPC record, is)
+// the second actor: a plain world record with a position (what an NPC record is)
 const HELPER = 'helper-1';
 
 export const specs = [
@@ -22,7 +22,7 @@ export const specs = [
           W.add({ id: HELPER, kind: 'act-helper', position: [p.x + 30, p.y, p.z] }, { save: false });
           const h = W.get(HELPER).position;
           const evs = []; engine.events.on('item:add', e => { if (e.id === 'act-gem') evs.push(`${e.container}/${e.actor}/${e.count}`); });
-          // 1. a key pickup taken by the helper (pickup.take as the helper, as a net peer's request or an NPC's op would run): into the helper's bag
+          // 1. a key pickup taken by the helper (pickup.take as the helper, as an NPC's op would run): into the helper's bag
           P.spawn([h.x, h.y, h.z], { give: 'act-gem', id: 'act-p1' });
           out.take = engine.ops.run('pickup.take', { id: 'act-p1' }, { actor: HELPER });
           out.afterTake = { helper: I.of(HELPER).count('act-gem'), player: I.count('act-gem') };
@@ -76,10 +76,10 @@ export const specs = [
   },
   {
     name: '[guard] actors: a pickup with give: fn works with no inventory installed, for a taker that is not the local player',
-    url: '/tests/net/',
+    url: '/tests/threads/',
     async run({ check, ev }) {
       const r = await ev(async () => {
-        const { createEngine, world, pickups } = threedogCoop;
+        const { createEngine, all: { world, pickups } } = threedogThreads;
         const e = createEngine({ canvas: document.createElement('canvas'), headless: true, ui: { loading: false }, urlState: false, saveKey: 'act-noinv' });
         e.use(world(), pickups({ takers: () => ['bot'] }));
         await e.start();
@@ -123,10 +123,10 @@ export const specs = [
   },
   {
     name: '[guard] pickups: an auto pickup that only comes from a save (fresh page, no spawn this session) is still walked into, at its own saved radius',
-    url: '/tests/net/',
+    url: '/tests/threads/',
     async run({ check, ev }) {
       const r = await ev(async () => {
-        const { createEngine, world, pickups } = threedogCoop;
+        const { createEngine, all: { world, pickups } } = threedogThreads;
         const mk = key => { const e = createEngine({ canvas: document.createElement('canvas'), headless: true, ui: { loading: false }, urlState: false, saveKey: key });
           e.use(world(), pickups({ takers: () => ['bot'] })); return e; };
         const a = mk('pk-save-a');
@@ -147,41 +147,7 @@ export const specs = [
       check('the loaded auto pickup is in reach of the taker (pickup.take was tried), with no spawn in this session', r.ok && r.rec && r.tries >= 1, JSON.stringify(r));
     },
   },
-  {
-    name: '[guard] actors over net: a peer walking into an auto pickup gets it in its own bag on the host (and sees it as player); a peer pressing for one is sent to the host',
-    url: '/tests/net/',
-    async run({ check, ev }) {
-      const r = await ev(async () => {
-        const { fakeNetwork, makeCoop } = threedogCoop;
-        const wire = fakeNetwork({ manual: true, latency: 40 });
-        const H = await makeCoop('host', wire.host());
-        const A = await makeCoop('client', wire.connect()), B = await makeCoop('client', wire.connect());
-        const go = (ms = 300) => { for (let t = 0; t < ms; t += 1000 / 60) { wire.advance(1000 / 60); for (const e of [H, A, B]) e.step(1 / 60, { render: false }); } };
-        go(300);
-        const ga = A.net.actor;
-        H.ops.allow(() => {
-          H.pickups.spawn([9, 0, 0], { give: 'apple', auto: true, id: 'np-auto', count: 2 });
-          H.pickups.spawn([-9, 0, 0], { give: 'bread', id: 'np-key' });
-        });
-        go(300);
-        // A walks its own avatar onto the auto pickup (client-driven movement, sent to the host)
-        A.ops.allow(() => A.world.move('player', { x: 9, y: 0, z: 0 }));
-        go(1200);
-        const afterAuto = { host: H.inventory.of(ga).count('apple'), hostOwn: H.inventory.count('apple'), aSees: A.inventory.count('apple'), b: B.inventory.count('apple'), gone: !H.world.get('np-auto') };
-        // A presses for the key pickup next to it: the client run is a pending request, the host runs it as A
-        A.ops.allow(() => A.world.move('player', { x: -9, y: 0, z: 0 }));
-        go(2500);
-        const press = A.ops.run('pickup.take', { id: 'np-key' });
-        go(600);
-        const out = { ga, afterAuto, press, bread: { host: H.inventory.of(ga).count('bread'), a: A.inventory.count('bread'), b: B.inventory.count('bread') },
-          hist: H.ops.recent('pickup.take').map(h => h.source + '/' + h.actor + '/' + h.ok) };
-        for (const e of [H, A, B]) e.dispose();
-        return out;
-      });
-      check('auto pickup on the host for a peer: into that peer\'s container, synced to it as its own bag, nobody else gets it', r.afterAuto.host === 2 && r.afterAuto.aSees === 2 && r.afterAuto.hostOwn === 0 && r.afterAuto.b === 0 && r.afterAuto.gone, JSON.stringify(r));
-      check('a client\'s pickup.take is a request: the host runs it as the peer and the item lands in the peer\'s bag', r.press.ok && r.press.pending && r.bread.host === 1 && r.bread.a === 1 && r.bread.b === 0 && r.hist.some(h => h === `net/${r.ga}/true`), JSON.stringify([r.press, r.bread, r.hist]));
-    },
-  },
+
   {
     name: '[guard] content words { op } and { can } run as the actor of the script, like give / take: a non-current actor entering a trigger',
     url: '/?cutscene=skip',

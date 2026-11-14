@@ -759,7 +759,7 @@ Native desktop abilities go through small explicit platform interfaces, keeping 
 
 ## 18. Multiplayer
 
-The existing `net` module stays as it is. Nothing new is designed for it, and new features are not shaped around it.
+The engine has no multiplayer module. Multiplayer is the lockstep netcode in `packages/rts` (`packages/rts/docs/RTS.md`), which relays player inputs and runs the same deterministic simulation on every machine; nothing in the engine is shaped around it.
 
 ## 19. Deliberate trade-offs
 

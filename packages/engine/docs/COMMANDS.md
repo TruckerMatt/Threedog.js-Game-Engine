@@ -90,7 +90,6 @@ export const specs = [{
 | `threedog gallery [-w game]` · `threedog gallery --shots [--mode …] [--light …] [--material name]` | Every registered model and texture on a turntable under three neutral light setups (tone mapping copied from the game), and the look-dev page (recipe 05 "Look-dev"). Without `--shots` it serves the game in dev and prints the `?gallery=1` URL; `--shots` writes `.threedog/gallery/` pictures, `index.html` and `index.json` headless, and `--mode` adds review pictures (silhouette, value, material channels) with measured facts and no thresholds. Options: `threedog gallery --help`. `recipes/05-props-bake.md` section 2c |
 | `npm run build` | Bundle each workspace into its own dist/ |
 | `threedog preview [game]` (or `-w game`, as for dev and build) | Serve a workspace's built dist/ (vite preview) to open the production build in a browser. It is the shipped game, so URL keys (`?play`, `?time`…) are not read; `shot`, `test` and `dev` read them, or set `createEngine({ urlState: true })` (`?fresh` stays dev-only) |
-| `threedog relay [port]` | The WebSocket relay for the net module (default port 8787, no dependencies). `recipes/27-net.md` |
 
 **`--json` result** (`check`, `test`): one line on stdout, `{ ok, summary, items: [{ code, level, file, line, message, fix }] }`. `level` is `error` or `warn`; a field is present only when known. `code` is the rule id (`R4`), a TypeScript code (`TS2345`), `content` or `test`. A test item's message is `<item name>: <check> → <reason>`; the totals are in `summary`. `ok` and the exit code agree.
 

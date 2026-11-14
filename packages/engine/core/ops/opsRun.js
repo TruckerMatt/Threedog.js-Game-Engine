@@ -27,7 +27,6 @@ export function runOp(ops, name, args, opts) {
   args = withDefaults(d.defaults, args);
   if (ops._inCan) throw devError(fmt(RUN_STRINGS.canRun, { name: ops._inCan, inner: name }));
   if (ops._stack.length >= MAX_DEPTH) throw devError(fmt(RUN_STRINGS.loop, { chain: ops._stack.concat(name).join(' -> ') }));
-  if (ops._route) { const r = ops._route(d, args, opts); if (r) return r; }   // net client: requests go to the host (also from inside a net: 'local' op)
   const parent = ops._stack.length ? ops._last : null;
   const ctx = ops._ctx(name, args, opts, parent);
   const depth = ops._stack.length, ev = e.events, where = `ops.run('${name}')`;
