@@ -34,10 +34,10 @@ CLI commands | picture |
 CLI commands | play |
 CLI commands | press |
 CLI commands | preview |
-CLI commands | relay |
 CLI commands | reload |
 CLI commands | report |
 CLI commands | resume |
+CLI commands | rts |
 CLI commands | scenario |
 CLI commands | scene |
 CLI commands | session |
@@ -95,6 +95,7 @@ CLI options | --json |
 CLI options | --keep |
 CLI options | --keep-cutscene |
 CLI options | --kind |
+CLI options | --level |
 CLI options | --lib |
 CLI options | --light |
 CLI options | --limit |
@@ -121,6 +122,7 @@ CLI options | --page |
 CLI options | --path-trace |
 CLI options | --pixel |
 CLI options | --play |
+CLI options | --players |
 CLI options | --plug |
 CLI options | --port |
 CLI options | --pos |
@@ -133,14 +135,19 @@ CLI options | --ref-region |
 CLI options | --region |
 CLI options | --renderer |
 CLI options | --report |
+CLI options | --rts |
 CLI options | --rule |
+CLI options | --runs |
 CLI options | --samples |
 CLI options | --save-baseline |
 CLI options | --scenario |
 CLI options | --scene-only |
+CLI options | --seconds |
+CLI options | --seed |
 CLI options | --shading |
 CLI options | --shot-region |
 CLI options | --shots |
+CLI options | --sim |
 CLI options | --since |
 CLI options | --size |
 CLI options | --software |
@@ -158,6 +165,7 @@ CLI options | --to |
 CLI options | --tolerance |
 CLI options | --tone |
 CLI options | --top |
+CLI options | --units |
 CLI options | --unused |
 CLI options | --update-snapshots |
 CLI options | --usage |
@@ -267,7 +275,6 @@ engine members | modules | Map<string, ModuleDef<any>>
 engine members | movement | Readonly<MovementProfile>
 engine members | music | ?Music
 engine members | nav | ?Nav
-engine members | net | ?Net @experimental
 engine members | nextFixed | <T>(fn: () => T) => Promise<T>
 engine members | npcs | ?NPCManager
 engine members | occlusion | Occlusion
@@ -295,6 +302,7 @@ engine members | remove | (...objs: Object3D[]) => void
 engine members | renderOnce | (target?: import("three").RenderTarget | null, camera?: import("three").Camera) => void
 engine members | renderer | EngineRenderer
 engine members | rigid | ?RigidBodies
+engine members | rts | ?Rts @experimental
 engine members | runState | RunState
 engine members | saves | Saves
 engine members | scene | Scene<Object3DEventMap>
@@ -553,7 +561,6 @@ engine sub-objects | ops.list | ({ available, actor }?: { available?: boolean; a
 engine sub-objects | ops.recent | (name?: string) => { seq: number; tick: number; phase: string; name: string; args: any; source: string; actor: string; ok: boolean; code: string | null; depth: number; count: number; }[]
 engine sub-objects | ops.refused | (name: string, args: any, { reason, actor, source }: { reason: string; actor?: string; source?: string; }) => void @experimental
 engine sub-objects | ops.revision | number
-engine sub-objects | ops.route | (fn: (def: any, args: any, opts: any) => any) => { remove(): void; }
 engine sub-objects | ops.run | (name: string, args?: object, opts?: { source?: string; actor?: string; }) => { ok: boolean; value?: any; revision: number; code?: string; facts?: object; nextActions?: { op: string; args?: object; }[]; }
 engine sub-objects | ops.undo | (name: string, args: object, value: any, opts?: { actor?: string; }) => { ok: boolean; code?: string; facts?: object; nextActions?: { op: string; args?: object; }[]; }
 engine sub-objects | page.away | boolean @experimental
@@ -763,6 +770,8 @@ engine sub-objects | uniforms.uMoonColor | { value: Color; } @experimental
 engine sub-objects | uniforms.uMoonSize | { value: number; } @experimental
 engine sub-objects | uniforms.uNight | { value: number; }
 engine sub-objects | uniforms.uRain | { value: number; }
+engine sub-objects | uniforms.uRtsFog | ?{ value: import("three").DataTexture; } @experimental
+engine sub-objects | uniforms.uRtsFogBounds | ?{ value: import("three").Vector4; } @experimental
 engine sub-objects | uniforms.uSkyCloudScale | { value: number; }
 engine sub-objects | uniforms.uSkyCloudSpeed | { value: Vector2; }
 engine sub-objects | uniforms.uSkyCurve | { value: number; } @experimental
@@ -907,7 +916,6 @@ error codes | nav-build |
 error codes | nav-fallback |
 error codes | nav-height |
 error codes | nav-link |
-error codes | net-option |
 error codes | npc-behavior |
 error codes | op-misuse |
 error codes | open-world-camera |
@@ -1049,12 +1057,6 @@ events | module:disabled |
 events | module:restored |
 events | music:change |
 events | music:stinger |
-events | net:close |
-events | net:join |
-events | net:leave |
-events | net:open |
-events | net:result |
-events | net:sync |
 events | op:rolledBack |
 events | page:blur |
 events | page:contextlost |
@@ -1072,6 +1074,10 @@ events | quest:start |
 events | quest:step |
 events | quest:unpaid |
 events | rigid:rebuilt |
+events | rts:death |
+events | rts:fire |
+events | rts:hit |
+events | rts:spawn |
 events | save:imported |
 events | save:loaded |
 events | save:written |
@@ -1143,7 +1149,6 @@ exports threedog | debug | (opts?: { open?: boolean; }) => ModuleDef<DebugPanel>
 exports threedog | dialogue | (opts?: DialogueOptions) => ModuleDef<Dialogue>
 exports threedog | ease | (e: Ease) => (t: number) => number
 exports threedog | fadeScreen | (engine: Engine, to: number, opts?: { seconds?: number; }) => Promise<void>
-exports threedog | fakeNetwork | (opts?: { latency?: number; jitter?: number; loss?: number; seed?: number; manual?: boolean; }) => { host(): any; connect(opts?: { key?: string; heartbeat?: number; }): any; advance(ms: number): void; readonly now: number; loss: number; latency: number; jitter: number; } @experimental
 exports threedog | firstPersonCamera | (opts?: FirstPersonCameraOptions) => ModuleDef<CameraRig>
 exports threedog | fixedCamera | (opts?: FixedCameraOptions) => ModuleDef<CameraRig>
 exports threedog | flow | (opts?: FlowOptions) => ModuleDef<Flow>
@@ -1162,18 +1167,18 @@ exports threedog | materialPatches | (material: THREE.Material) => string[] @exp
 exports threedog | mergeColored | (parts: [THREE.BufferGeometry, ColorLike][], { flat }?: { flat?: boolean; }) => THREE.BufferGeometry
 exports threedog | music | (opts?: MusicOptions) => ModuleDef<Music>
 exports threedog | nav | (opts?: NavOptions) => ModuleDef<Nav>
-exports threedog | net | (opts?: { role: "host" | "client"; transport: any; sync?: "auto" | string[]; syncEvery?: number; keepAlive?: number; rate?: number; burst?: number; maxSpeed?: number; posEvery?: number; actorFor?: (peerId: number) => string; actorFields?: string[]; avatarFields?: string[]; interpolate?: string[]; avatar?: boolean; onJoin?: (e: any, peer: { id: number; actor: string; }) => void; onLeave?: (e: any, peer: { id: number; actor: string; }) => void; }) => import("../../../core").ModuleDef<Net> @experimental
 exports threedog | openWorld | (opts: OpenWorldOptions) => ModuleDef[]
 exports threedog | parseClock | (clock: string | number, hoursPerDay?: number) => number
 exports threedog | particles | (opts?: ParticlesOptions) => ModuleDef<Particles>
 exports threedog | photo | (opts?: PhotoOptions) => ModuleDef<Photo>
 exports threedog | pickTarget | <T>(from: PositionLike, view: { x: number; z: number; } | number, candidates: Iterable<T>, opts?: TargetOptions<T>) => T | null
 exports threedog | pickups | (opts?: PickupsOptions) => ModuleDef<Pickups>
-exports threedog | presets | { readonly weather: { readonly temperate: WeatherOptions & Required<Pick<WeatherOptions, "types" | "autoPool">>; }; readonly calendar: { readonly fourSeasons: CalendarOptions; readonly cycle: CalendarOptions; readonly fixedTime: CalendarOptions; }; readonly player: { readonly [K in "thirdPerson" | "lockOn" | "aim" | "sideScroller"]: Pick<import("./types/gameplay").PlayerOptions, "control" | "faceMode" | "cameraFollow">; }; readonly interactions: { readonly [K in "nearest" | "facing" | "aim"]: import("./types/gameplay").InteractionsOptions; }; readonly bindings: { readonly [K in "walk" | "interact" | "inventory" | "quests" | "photo" | "gridRotate" | "brake" | "dialogNumbers" | "rtsRotate" | "cutsceneSkip" | "debug"]: Readonly<Record<string, readonly string[]>>; }; readonly camera: { readonly follow: import("./types/physics").FollowCameraOptions; readonly overShoulder: import("./types/physics").FollowCameraOptions; readonly thirdPersonAction: import("./types/physics").FollowCameraOptions; }; }
+exports threedog | presets | { readonly weather: { readonly temperate: WeatherOptions & Required<Pick<WeatherOptions, "types" | "autoPool">>; }; readonly calendar: { readonly fourSeasons: CalendarOptions; readonly cycle: CalendarOptions; readonly fixedTime: CalendarOptions; }; readonly player: { readonly [K in "thirdPerson" | "lockOn" | "aim" | "sideScroller"]: Pick<import("./types/gameplay").PlayerOptions, "control" | "faceMode" | "cameraFollow">; }; readonly interactions: { readonly [K in "nearest" | "facing" | "aim"]: import("./types/gameplay").InteractionsOptions; }; readonly bindings: { readonly [K in "walk" | "interact" | "inventory" | "quests" | "photo" | "gridRotate" | "brake" | "dialogNumbers" | "rtsRotate" | "rts" | "cutsceneSkip" | "debug"]: Readonly<Record<string, readonly string[]>>; }; readonly camera: { readonly follow: import("./types/physics").FollowCameraOptions; readonly overShoulder: import("./types/physics").FollowCameraOptions; readonly thirdPersonAction: import("./types/physics").FollowCameraOptions; }; }
 exports threedog | quests | (opts?: QuestsOptions) => ModuleDef<Quests>
 exports threedog | rampTexture | (ramp: (number | import("../../common").ColorLike)[], soften?: number) => THREE.DataTexture
 exports threedog | readParams | <T extends object = any>(where: string, schema: Record<string, ParamSpec>, opts?: object) => T
 exports threedog | rigid | (opts?: RigidOptions) => ModuleDef<RigidBodies>
+exports threedog | rts | (opts: RtsOptions) => ModuleDef<Rts>
 exports threedog | rtsCamera | (opts?: RtsCameraOptions) => ModuleDef<CameraRig>
 exports threedog | sampleGrid | (data: ArrayLike<number>, opts: { width: number; height: number; cellSize?: number | [number, number]; size?: [number, number]; origin?: [number, number]; interp?: "nearest" | "linear" | "cubic"; clamp?: boolean; outside?: number; }) => (x: number, z: number) => number
 exports threedog | screenToGround | (engine: Engine, ndcX: number, ndcY: number, opts?: { maxDistance?: number; }) => Vector3 | null
@@ -1192,7 +1197,6 @@ exports threedog | uiFocus | (engine: Engine) => UIFocus @experimental
 exports threedog | vegetation | (opts?: VegetationModuleOptions) => [ModuleDef<Vegetation>, ModuleDef<VegetationDraw>]
 exports threedog | water | (opts?: WaterOptions) => ModuleDef<Water>
 exports threedog | weather | (opts?: WeatherOptions) => [ModuleDef<Weather>, ModuleDef<import("./weatherDraw.js").WeatherDraw>]
-exports threedog | webSocket | (url: string, { host, key, heartbeat, reconnect }?: { host?: boolean; key?: string; heartbeat?: number; reconnect?: boolean; }) => { send(msg: any, to?: number): void; on(type: string, fn: Function): { remove(): void; }; close(): void; key: string | null; id: number | null; } @experimental
 exports threedog | world | (opts?: { cellSize?: number; radius?: number; farEvery?: number; farMaxPerTick?: number; buildPerFrame?: number; }) => import("../../../core").ModuleDef<World>
 exports threedog | worldToScreen | (engine: Engine, pos: PositionLike) => ScreenPoint
 exports threedog/tsl | celLighting | () => import("three/webgpu").LightingModel @experimental
@@ -1382,13 +1386,6 @@ module APIs | nav.query | any @experimental
 module APIs | nav.ready | boolean
 module APIs | nav.tileCache | any @experimental
 module APIs | nav.version | number @experimental
-module APIs | net.actor | string @experimental
-module APIs | net.connected | boolean @experimental
-module APIs | net.peers | { id: number; actor: string; }[] @experimental
-module APIs | net.pending | Map<number, string> @experimental
-module APIs | net.reconnect | (transport: any) => void @experimental
-module APIs | net.role | "host" | "client" @experimental
-module APIs | net.stats | Record<string, number> @experimental
 module APIs | particles.attach | (name: string, object3d: THREE.Object3D, opts?: { rate?: number; ratePerMeter?: number; offset?: number[]; overrides?: ParticleOptions | null; }) => ParticleEmitter
 module APIs | particles.clear | (name?: string) => void
 module APIs | particles.count | (name?: string) => number
@@ -1450,6 +1447,19 @@ module APIs | rigid.treeRadius | number @experimental
 module APIs | rigid.vehicles | Vehicle[] @experimental
 module APIs | rigid.waterDrag | number @experimental
 module APIs | rigid.world | any @experimental
+module APIs | rts.barBackMaterial | Material<MaterialEventMap> @experimental
+module APIs | rts.barMaterial | Material<MaterialEventMap> @experimental
+module APIs | rts.driver | any @experimental
+module APIs | rts.fog | RtsFog @experimental
+module APIs | rts.issue | (cmd: Record<string, any>) => string @experimental
+module APIs | rts.meshes | Record<string, InstancedMesh<BufferGeometry<NormalBufferAttributes, BufferGeometryEventMap>, Material<MaterialEventMap> | Material<MaterialEventMap>[], Object3DEventMap>> @experimental
+module APIs | rts.pointerTaken | boolean @experimental
+module APIs | rts.ringMaterial | Material<MaterialEventMap> @experimental
+module APIs | rts.select | (ids: number[]) => readonly number[] @experimental
+module APIs | rts.selection | readonly number[] @experimental
+module APIs | rts.sim | any @experimental
+module APIs | rts.takePointer | (why?: string) => { remove(): void; } @experimental
+module APIs | rts.waypointMaterial | Material<MaterialEventMap> @experimental
 module APIs | settings.actionList | () => any[] @experimental
 module APIs | settings.addSection | (id: string, section?: SettingsSection) => Settings
 module APIs | settings.close | () => void
@@ -1729,26 +1739,10 @@ module options | nav.maxClimb | ?number
 module options | nav.maxObstacles | ?number @experimental
 module options | nav.maxSlope | ?number
 module options | nav.tileSize | ?number @experimental
-module options | net.actorFields | ?string[] @experimental
-module options | net.actorFor | ?(peerId: number) => string @experimental
-module options | net.avatar | ?boolean @experimental
-module options | net.avatarFields | ?string[] @experimental
-module options | net.burst | ?number @experimental
-module options | net.interpolate | ?string[] @experimental
-module options | net.keepAlive | ?number @experimental
-module options | net.maxSpeed | ?number @experimental
-module options | net.onJoin | ?(e: any, peer: { id: number; actor: string; }) => void @experimental
-module options | net.onLeave | ?(e: any, peer: { id: number; actor: string; }) => void @experimental
-module options | net.posEvery | ?number @experimental
-module options | net.rate | ?number @experimental
-module options | net.role | "host" | "client" @experimental
-module options | net.sync | ?"auto" | string[] @experimental
-module options | net.syncEvery | ?number @experimental
-module options | net.transport | any @experimental
 module options | openWorld.ambience | ?Part<(opts?: AmbienceOptions) => ModuleDef<Ambience>>
 module options | openWorld.autoWeather | ?boolean
 module options | openWorld.calendar | ?Part<(opts?: CalendarOptions) => ModuleDef<Calendar>>
-module options | openWorld.camera | false | ModuleDef<any> | "follow" | "firstPerson" | "rts" | "fixed"
+module options | openWorld.camera | false | ModuleDef<any> | "follow" | "rts" | "firstPerson" | "fixed"
 module options | openWorld.characters | ?Part<(opts?: CharactersOptions) => ModuleDef<CharactersApi>>
 module options | openWorld.collision | ?Part<(opts?: CollisionOptions) => ModuleDef<Collision>>
 module options | openWorld.dayLength | ?number
@@ -1795,6 +1789,12 @@ module options | rigid.terrainRing | ?number
 module options | rigid.treeColliderHeight | ?number @experimental
 module options | rigid.treeRadius | ?number @experimental
 module options | rigid.waterDrag | ?number @experimental
+module options | rts.controls | ?boolean
+module options | rts.driver | any
+module options | rts.fog | ?boolean
+module options | rts.look | ?Record<string, RtsLook>
+module options | rts.minimap | ?boolean
+module options | rts.teamColors | ?ColorRepresentation[]
 module options | rtsCamera.bounds | ?{ minX?: number; maxX?: number; minZ?: number; maxZ?: number; }
 module options | rtsCamera.dragPan | ?boolean @experimental
 module options | rtsCamera.edgePan | ?boolean @experimental

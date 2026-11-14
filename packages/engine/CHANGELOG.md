@@ -4,6 +4,7 @@ What changed in each version and how a game upgrades.
 
 ## Unreleased
 
+- Migration: `ops.route` is gone with the net module (it existed only so a net client could send its ops to a host); lockstep sends commands, not ops, so nothing replaces it. `openWorld.camera` takes the same values as before (`'follow'`, `'rts'`, `'firstPerson'`, `'fixed'`, a camera module or `false`); only the declared order changed.
 - Added: RTS engine fork. `@threedog/rts` (packages/rts): a deterministic fixed-point simulation (units, orders, flow-field movement, formations, combat, fog of war with terrain sight), game modes (`reinforceSystem`, `captureSystem`, `baseSystem`, `victorySystem`), bots (`botSystem`), drivers (`localDriver`, `lockstepDriver`, `replayDriver`), the relay (`RelayRoom`, `threedog rts relay`) and replays (`makeReplay`, `verifyReplay`). Guide: `packages/rts/docs/RTS.md`.
 - Added: `rts()` module (`engine.rts`: `select`, `issue`, `selection`, `meshes`, `fog`, ring and bar materials; events `rts:fire`, `rts:hit`, `rts:death`, `rts:spawn`; ops `rts.order`, `rts.select`; uniforms `uRtsFog`, `uRtsFogBounds`), recipe 67-rts.md, and `presets.bindings.rts`.
 - Added: `threedog rts match | desync | bench | replay | relay | browsers` (headless RTS tools), `new-game --rts` / `init --rts` (a reinforcement match against a bot), and rule R72 (no float trig, real time, randomness, DOM or three.js in simulation code).
