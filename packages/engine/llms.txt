@@ -73,7 +73,7 @@ Taking over a game: its status notes first. A new feature: docs/AI.md or threedo
 - Ambient occlusion, soft shadows: docs/recipes/52-around-the-picture.md
 - Many bullets, debris: docs/recipes/65-swarm.md §"Which tool for many things"
 - Enemy crowds, flocks: docs/recipes/65-swarm.md §"Which tool for many things"
-- RTS units, fog, minimap: docs/recipes/67-rts.md
+- RTS units, minimap: docs/recipes/67-rts.md
 
 ## Project, world, content
 

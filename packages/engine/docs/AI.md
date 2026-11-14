@@ -89,7 +89,7 @@ A row or `threedog how` -> recipe -> `api/<module>.md`. Also: `CONVENTIONS.md`, 
 | Ambient occlusion, soft shadows | `engine.post.add(ao())`, `bakeVertexAO` | 52-around-the-picture.md |
 | Many bullets, debris | `engine.swarm` | 65-swarm.md §"Which tool for many things" |
 | Enemy crowds, flocks | `engine.swarm` | 65-swarm.md §"Which tool for many things" |
-| RTS units, fog, minimap | `engine.rts` | 67-rts.md |
+| RTS units, minimap | `engine.rts` | 67-rts.md |
 
 ### Project, world, content
 | To do | Use | Recipe |
