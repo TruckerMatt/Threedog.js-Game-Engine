@@ -30,7 +30,7 @@ export function createSim(o) {
   if (!o.map?.cols) throw new Error('createSim: map is required (createMap({ width, depth }))');
   if (!Array.isArray(o.players) || !o.players.length) throw new Error('createSim: players is required, e.g. players: [{ team: 0 }, { team: 1 }]');
   const sim = {
-    content: o.content, map: o.map, tickRate: TICK_RATE,
+    content: o.content, map: o.map.copy(), tickRate: TICK_RATE,
     tick: 0, nextId: 1, seed: o.seed ?? 1, rng: new Rng(o.seed ?? 1),
     players: o.players.map((p, i) => ({ index: i, team: p.team ?? i, name: p.name ?? `player ${i + 1}`, faction: p.faction ?? null,
       bot: p.bot ?? null, alive: true, left: false, res: 0, score: 0 })),

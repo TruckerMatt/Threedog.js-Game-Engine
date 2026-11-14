@@ -9,17 +9,33 @@ export const GOAL = 8, NONE = 255;
 /** Neighbor offsets: dx, dz, cost, in a fixed order */
 export const DIRS = [[1, 0, 10], [0, 1, 10], [-1, 0, 10], [0, -1, 10], [1, 1, 14], [-1, 1, 14], [-1, -1, 14], [1, -1, 14]];
 const CACHE_MAX = 48;
+/** New fields built per tick at most; a unit that needs one more this tick steers straight and asks again next tick */
+export const BUILDS_PER_TICK = 3;
 
-/** The flow field toward goal cell index `goal` (moved to the nearest open cell if blocked) */
+/** The flow field toward goal cell index `goal` (moved to the nearest open cell if blocked); null when this tick's build budget is spent */
 export function flowField(sim, goal) {
   const m = sim.map, key = `${goal}:${m.version ?? 0}`;
   const cache = sim.flowCache ??= new Map();
   const hit = cache.get(key);
   if (hit) { cache.delete(key); cache.set(key, hit); return hit; }   // most recent last
+  if (sim.flowBuildTick !== sim.tick) { sim.flowBuildTick = sim.tick; sim.flowBuilds = 0; }
+  if (sim.flowBuilds >= BUILDS_PER_TICK) return null;
+  sim.flowBuilds++;
   const f = build(m, openCellNear(m, goal));
   cache.set(key, f);
   if (cache.size > CACHE_MAX) cache.delete(cache.keys().next().value);
   return f;
+}
+
+/** true when no blocked cell lies on the straight line between two fixed points (cell walk; for short hops) */
+export function clearLine(m, x0, z0, x1, z1) {
+  let cx = m.cellX(x0), cz = m.cellZ(z0);
+  const tx = m.cellX(x1), tz = m.cellZ(z1), n = Math.max(Math.abs(tx - cx), Math.abs(tz - cz));
+  for (let i = 1; i <= n; i++) {
+    const x = cx + Math.round(((tx - cx) * i) / n), z = cz + Math.round(((tz - cz) * i) / n);
+    if (m.block[z * m.cols + x]) return false;
+  }
+  return true;
 }
 
 /** The nearest unblocked cell to `cell` (itself when open), searching rings outward; -1 if the map has no open cell */
@@ -37,28 +53,47 @@ export function openCellNear(m, cell) {
 }
 
 function build(m, goal) {
-  const n = m.cols * m.rows, cost = new Uint32Array(n).fill(0xffffffff), dir = new Uint8Array(n).fill(NONE);
+  const cols = m.cols, rows = m.rows, n = cols * rows, block = m.block;
+  const cost = new Uint32Array(n).fill(0xffffffff), dir = new Uint8Array(n).fill(NONE);
   const f = { goal, cost, dir };
   if (goal < 0) return f;
-  // bucket queue: costs grow by at most 14 per step, so 15 rotating buckets of cell lists are enough
-  const B = 15, buckets = Array.from({ length: B }, () => []);
-  cost[goal] = 0; dir[goal] = GOAL; buckets[0].push(goal);
-  let cur = 0, pending = 1;
+  // Dial's bucket queue: costs grow by at most 14 per step, so 15 rotating buckets; each bucket is a linked list in typed arrays
+  const B = 15, heap = new Int32Array(n * 2 + 64), bucketOf = new Int32Array(heap.length);
+  const head = new Int32Array(B).fill(-1), next = new Int32Array(heap.length);
+  let free = 0, pending = 0;
+  const push = (c, v) => { const i = free++; heap[i] = c; bucketOf[i] = v; next[i] = head[v % B]; head[v % B] = i; pending++; };
+  cost[goal] = 0; dir[goal] = GOAL; push(goal, 0);
+  let cur = 0;
   while (pending > 0) {
-    const bucket = buckets[cur % B];
-    if (!bucket.length) { cur++; continue; }
-    const c = bucket.pop(); pending--;
+    const b = cur % B;
+    let i = head[b];
+    if (i === -1) { cur++; continue; }
+    head[b] = next[i]; pending--;
+    const c = heap[i];
     if (cost[c] !== cur) continue;   // stale entry
-    const cx = c % m.cols, cz = (c / m.cols) | 0;
-    for (let d = 0; d < 8; d++) {
-      const [dx, dz, w] = DIRS[d], x = cx + dx, z = cz + dz;
-      if (m.isBlocked(x, z)) continue;
-      if (dx && dz && (m.isBlocked(cx + dx, cz) || m.isBlocked(cx, cz + dz))) continue;   // no corner cutting
-      const nc = z * m.cols + x, nv = cur + w;
-      if (nv < cost[nc]) { cost[nc] = nv; dir[nc] = OPP[d]; buckets[nv % B].push(nc); pending++; }
-    }
+    if (free > heap.length - 16) { free = compact(); }
+    const cx = c % cols, cz = (c - cx) / cols;
+    const xl = cx > 0, xr = cx < cols - 1, zd = cz > 0, zu = cz < rows - 1;
+    const oR = xr && !block[c + 1], oL = xl && !block[c - 1], oU = zu && !block[c + cols], oD = zd && !block[c - cols];
+    if (oR) relax(c + 1, cur + 10, 2);
+    if (oU) relax(c + cols, cur + 10, 3);
+    if (oL) relax(c - 1, cur + 10, 0);
+    if (oD) relax(c - cols, cur + 10, 1);
+    if (oR && oU && !block[c + cols + 1]) relax(c + cols + 1, cur + 14, 6);
+    if (oL && oU && !block[c + cols - 1]) relax(c + cols - 1, cur + 14, 7);
+    if (oL && oD && !block[c - cols - 1]) relax(c - cols - 1, cur + 14, 4);
+    if (oR && oD && !block[c - cols + 1]) relax(c - cols + 1, cur + 14, 5);
   }
   return f;
+  function relax(nc, nv, d) { if (nv < cost[nc]) { cost[nc] = nv; dir[nc] = d; push(nc, nv); } }
+  // the entry pool ran low: rebuild the lists from the live entries only (stale ones dropped)
+  function compact() {
+    const keep = [];
+    for (let k = 0; k < B; k++) for (let j = head[k]; j !== -1; j = next[j]) if (cost[heap[j]] === bucketOf[j]) keep.push(heap[j], bucketOf[j]);
+    head.fill(-1); pending = 0; free = 0;
+    for (let j = 0; j < keep.length; j += 2) push(keep[j], keep[j + 1]);
+    return free;
+  }
 }
 
 // the direction from the neighbor back to c

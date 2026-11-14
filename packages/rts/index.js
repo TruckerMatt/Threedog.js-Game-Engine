@@ -47,3 +47,8 @@ export { RelayRoom } from './net/relay-room.js';
 export { webSocketTransport, memoryNetwork } from './net/transport.js';
 export { makeReplay, verifyReplay, replayDriver, REPLAY_VERSION } from './net/replay.js';
 export { PROTOCOL, TURN_MS, HASH_EVERY, MAX_PLAYERS } from './net/protocol.js';
+export { captureSystem } from './modes/capture.js';
+export { reinforceSystem } from './modes/reinforce.js';
+export { baseSystem } from './modes/base.js';
+export { victorySystem } from './modes/victory.js';
+export { botSystem } from './ai.js';

@@ -60,6 +60,10 @@ function finish(m) {
   /** true when the fixed position is on the map */
   m.inside = (x, z) => x >= m.minX && z >= m.minZ && x < m.maxX && z < m.maxZ;
   m.isBlocked = (cx, cz) => cx < 0 || cz < 0 || cx >= m.cols || cz >= m.rows || m.block[cz * m.cols + cx] === 1;
+  /** A copy that shares the (read-only) heights but owns its blocked cells: each sim gets one, since buildings change blocked cells */
+  m.copy = () => finish({ cell: m.cell, cellM: m.cellM, cols: m.cols, rows: m.rows, originX: m.originX, originZ: m.originZ, height: m.height, block: m.block.slice() });
+  /** Mark cells blocked (1) or open (0); bumps m.version so cached flow fields are rebuilt */
+  m.setBlocked = (cells, v) => { for (const c of cells) m.block[c] = v ? 1 : 0; m.version = (m.version ?? 0) + 1; };
   m.toJSON = () => ({ cell: m.cell, cols: m.cols, rows: m.rows, originX: m.originX, originZ: m.originZ, height: Array.from(m.height), block: Array.from(m.block) });
   return m;
 }

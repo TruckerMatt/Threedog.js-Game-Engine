@@ -10,11 +10,12 @@
 //   { p, t: 'hold',   ids }                             stay put, fight only what comes in range
 // Ids that died since the order was given are skipped; an id the player does not own refuses the whole command.
 import { mul, div, len, len2, atan2, cos, sin, angleDiff, clamp, fx, ANGLE, ONE } from './fixed.js';
-import { flowField, GOAL, NONE, DIRS } from './flowfield.js';
+import { flowField, clearLine, GOAL, NONE, DIRS } from './flowfield.js';
 
 /** Most units one command may carry */
 export const MAX_IDS = 500;
 const APPROACH_CELLS = 6;   // closer than this to the final point, steer straight at it
+const DIRECT_CELLS = 30;    // closer than this with nothing blocked in between, steer straight too (no field needed)
 const STUCK_DONE = 12;      // ticks without progress inside the group radius count as arrived
 
 // state field values
@@ -136,6 +137,7 @@ export function unitsSystem() {
           if (o.t === 'attack') { e.orders.shift(); continue; }
         }
         if (o.t === 'attack') { e.orders.shift(); continue; }   // the target is gone
+        if (o.t !== 'move' && o.t !== 'amove' && o.t !== 'patrol') continue;   // another system's order (gather, build...): it moves the unit
         e.state = MOVING;
         const d = len(o.x - e.x, o.z - e.z), before = d;
         if (d <= Math.max(k.speed, fx(0.25))) { arrive(e, o); continue; }
@@ -168,9 +170,10 @@ function arrive(e, o) {
 export function moveToward(sim, e, k, tx, tz, g) {
   const m = sim.map;
   let wx = tx, wz = tz;
-  const close = len2(tx - e.x, tz - e.z) <= len2(m.cell * APPROACH_CELLS, 0);
-  if (!k.air && !close) {
-    const f = flowField(sim, g >= 0 ? g : m.cellAt(tx, tz));
+  const d2 = len2(tx - e.x, tz - e.z);
+  const close = d2 <= len2(m.cell * APPROACH_CELLS, 0) || (d2 <= len2(m.cell * DIRECT_CELLS, 0) && clearLine(m, e.x, e.z, tx, tz));
+  const f = !k.air && !close ? flowField(sim, g >= 0 ? g : m.cellAt(tx, tz)) : null;
+  if (f) {
     let c = m.cellAt(e.x, e.z);
     const d0 = f.dir[c];
     if (d0 !== NONE && d0 !== GOAL) {

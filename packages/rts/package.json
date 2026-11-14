@@ -11,6 +11,7 @@
   "exports": {
     ".": "./index.js",
     "./fixed": "./fixed.js",
+    "./examples/*": "./examples/*",
     "./package.json": "./package.json"
   },
   "files": [
