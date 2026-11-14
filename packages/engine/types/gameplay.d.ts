@@ -431,6 +431,12 @@ export interface Rts {
   readonly barMaterial: import('three').Material;
   /** The empty part behind a health bar */
   readonly barBackMaterial: import('three').Material;
+  /** true while the game holds the pointer (takePointer): the module's clicks and drags wait; keys still work */
+  readonly pointerTaken: boolean;
+  /** Borrow the mouse for the game's own pointer mode (placing a building...): the module's selection and orders by click wait until remove() */
+  takePointer(why?: string): { remove(): void };
+  /** The lines and dots of the selected units' queued orders */
+  readonly waypointMaterial: import('three').Material;
   /** The fog overlay and texture; null for an observer or a sim without the vision system */
   readonly fog: RtsFog | null;
   /**

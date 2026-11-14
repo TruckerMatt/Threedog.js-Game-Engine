@@ -1,4 +1,5 @@
-// Selection rings under selected units and health bars over selected or hurt ones. Neutral gray; the game restyles through the materials the module hands out.
+// Selection rings under selected units, health bars over selected or hurt ones, and the queued orders of selected units as a path of
+// flat lines with a dot at each waypoint. Neutral gray; the game restyles through the materials the module hands out.
 import * as THREE from 'three';
 import { neutralMaterial } from '../../render/neutral.js';
 import { InstancePool, putYaw } from './pool.js';
@@ -20,7 +21,12 @@ export class Marks {
     this.barMaterial = glow('rts-bar', 0xc8c8c8, { side: THREE.DoubleSide, depthWrite: false });
     /** The empty part behind it @type {THREE.Material} */
     this.barBackMaterial = glow('rts-bar-back', 0x303030, { side: THREE.DoubleSide, depthWrite: false });
+    /** The lines and dots of selected units' queued orders @type {THREE.Material} */
+    this.waypointMaterial = glow('rts-waypoint', 0xa0a0a0, { side: THREE.DoubleSide, transparent: true, opacity: 0.8, depthWrite: false });
     const ring = new THREE.RingGeometry(0.88, 1, 40).rotateX(-Math.PI / 2), quad = new THREE.PlaneGeometry(1, 1);
+    this.flat = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
+    this.paths = new InstancePool(e, 'rts:paths', this.flat, this.waypointMaterial);
+    this.dots = new InstancePool(e, 'rts:waypoints', new THREE.CircleGeometry(0.6, 12).rotateX(-Math.PI / 2), this.waypointMaterial, { ownsGeometry: true });
     this.rings = new InstancePool(e, 'rts:rings', ring, this.ringMaterial, { ownsGeometry: true });
     this.backs = new InstancePool(e, 'rts:bars-back', quad, this.barBackMaterial);
     this.fills = new InstancePool(e, 'rts:bars', quad, this.barMaterial);
@@ -53,11 +59,44 @@ export class Marks {
       nb++;
     }
     this.rings.finish(nr); this.backs.finish(nb); this.fills.finish(nb);
+    this.drawPaths(pair, a, selected, visible);
+  }
+
+  /** Queued orders of the selected units: unit → first waypoint → next ... (an attack order points at its target) */
+  drawPaths(pair, a, selected, visible) {
+    const cur = pair.cur, sim = this.sim, ground = (x, z) => toFloat(sim.map.heightAt(x, z)) + 0.15;
+    let ns = 0, nd = 0;
+    const segs = [], dots = [];
+    for (let i = 0; i < cur.n && segs.length < 2000; i++) {
+      if (!visible[i] || !selected.has(cur.id[i])) continue;
+      const u = sim.get(cur.id[i]);
+      if (!u?.orders.length) continue;
+      const at = pair.at(i, a, _at);
+      let px = at.x, pz = at.z;
+      for (const o of u.orders.slice(0, 8)) {
+        const t = o.t === 'attack' || o.t === 'gather' ? sim.get(o.target) : null;
+        if ((o.t === 'attack' || o.t === 'gather') && !t) break;
+        const fx0 = t ? t.x : o.x, fz0 = t ? t.z : o.z;
+        if (!Number.isFinite(fx0)) break;
+        const x = toFloat(fx0), z = toFloat(fz0);
+        segs.push([px, pz, x, z, ground(fx0, fz0)]); dots.push([x, ground(fx0, fz0), z]);
+        if (o.t === 'patrol' && Number.isFinite(o.bx)) { segs.push([x, z, toFloat(o.bx), toFloat(o.bz), ground(o.bx, o.bz)]); dots.push([toFloat(o.bx), ground(o.bx, o.bz), toFloat(o.bz)]); }
+        px = x; pz = z;
+      }
+    }
+    this.paths.ensure(segs.length); this.dots.ensure(dots.length);
+    for (const [x0, z0, x1, z1, y] of segs) {
+      const dx = x1 - x0, dz = z1 - z0, l = Math.hypot(dx, dz);   // presentation: drawing only
+      if (l < 0.01) continue;
+      putYaw(this.paths.m, ns++, (x0 + x1) / 2, y, (z0 + z1) / 2, Math.atan2(-dz, dx), l, 1, 0.25);   // presentation
+    }
+    for (const [x, y, z] of dots) putYaw(this.dots.m, nd++, x, y + 0.01, z, 0, 1, 1, 1);
+    this.paths.finish(ns); this.dots.finish(nd);
   }
 
   dispose() {
-    this.rings.dispose(); this.backs.dispose(); this.fills.dispose(); this.quad.dispose();
-    this.ringMaterial.dispose(); this.barMaterial.dispose(); this.barBackMaterial.dispose();
+    this.rings.dispose(); this.backs.dispose(); this.fills.dispose(); this.paths.dispose(); this.dots.dispose(); this.quad.dispose(); this.flat.dispose();
+    this.waypointMaterial.dispose(); this.ringMaterial.dispose(); this.barMaterial.dispose(); this.barBackMaterial.dispose();
   }
 }
 

@@ -30,6 +30,7 @@ The sim and its driver are the game's. The module steps the driver in the fixed 
 engine.rts.select([3, 4]);                                        // own, living units only; returns the new selection
 engine.rts.issue({ t: 'move', ids: engine.rts.selection.slice(), x: fx(10), z: fx(-4) });   // '' or why the sim refused it
 ```
+Right click on a resource field with workers selected gathers, and with structures selected it also sets their rally point (base building). A game mode that needs the mouse for itself (placing a building, aiming) holds it with `const h = engine.rts.takePointer('placing')`: clicks and drags wait until `h.remove()`, keys keep working.
 `engine.rts.selection` is a frozen list of ids. `issue` takes the sim's command shapes (positions fixed: `fx(meters)`). A game with its own UI passes `controls: false`: no key is read and no box is made; it calls `select` and `issue` itself.
 
 ## Drawing and look
@@ -41,7 +42,7 @@ engine.use(rts({ driver, look: {
 } }));
 engine.rts.ringMaterial.emissive.set(0x66ff66);                                  // selection ring: neutral until you restyle it
 ```
-Every row is tinted by its team through the instance color (`teamColors`, else a different gray per team). Units the local team does not see are not drawn. Selected units get a ring (`ringMaterial`), selected or hurt ones a health bar (`barMaterial` over `barBackMaterial`).
+Every row is tinted by its team through the instance color (`teamColors`, else a different gray per team). Units the local team does not see are not drawn. Selected units get a ring (`ringMaterial`), selected or hurt ones a health bar (`barMaterial` over `barBackMaterial`), and the queued orders of selected units show as a path with a dot at each waypoint (`waypointMaterial`).
 
 ## Fog and minimap
 With the vision system in the sim, `fog` (default on) draws a dark overlay lifted 0.3 m over the ground: unexplored mostly opaque, explored but not seen half, seen clear. It is rebuilt only when the team's vision changes. The raw fog is also published for your own terrain shader: `engine.uniforms.uRtsFog` (a `DataTexture`, one texel per vision cell, r = seen now, g = ever seen) and `engine.uniforms.uRtsFogBounds` (origin x, z and size in meters); `engine.rts.fog` holds the mesh, material, texture and uniforms (`fog: false` keeps only the texture).

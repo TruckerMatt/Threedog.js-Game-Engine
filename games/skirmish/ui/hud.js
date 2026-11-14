@@ -56,6 +56,7 @@ export function createHud(driver) {
           row.append(el('span', '', p.holder < 0 ? 'neutral' : `${p.holder === team ? 'ours' : 'theirs'} ${p.amount}%${p.contested ? ' ⚔' : ''}`));
           return row;
         }), el('div', 'row', `Score: us ${score[team] ?? 0} · them ${Object.entries(score).filter(([t]) => Number(t) !== team).reduce((s, [, v]) => s + v, 0)}`));
+        if (sim.mission) status.textContent = `${sim.mission.objective} — ${sim.mission.message}`;
         drops.textContent = (sim.reinforce?.pending ?? []).filter(d => d.p === me).map(d => `${d.kinds.length} arriving in ${Math.ceil((d.at - sim.tick) / sim.tickRate)} s`).join(' · ');
         const net = driver.describe();
         if (net.driver === 'lockstep') status.textContent = net.status === 'waiting' ? 'waiting for the network…' : driver.desyncs.length ? `DESYNC at turn ${driver.desyncs[0].turn}` : '';
@@ -73,14 +74,14 @@ export function createHud(driver) {
 }
 
 /** The online lobby: who is in, ready, and (host) start. Returns the element; remove it once the match starts. */
-createHud.lobby = (/** @type {any} */ driver) => {
+createHud.lobby = (/** @type {any} */ driver, /** @type {string} */ mode = 'reinforce') => {
   const style = el('style', '', css), root = el('div', 'hud');
   document.head.append(style); document.body.append(root);
   const list = el('div'), ready = el('button', '', 'Ready'), start = el('button', '', 'Start (host)'), msg = el('div');
   root.append(el('h3', '', 'Lobby'), list, ready, start, msg);
   let isReady = false;
   ready.onclick = () => { isReady = !isReady; driver.ready(isReady); ready.textContent = isReady ? 'Not ready' : 'Ready'; };
-  start.onclick = () => driver.start({});
+  start.onclick = () => driver.start({ mode });
   driver.on('lobby', l => {
     list.replaceChildren(...l.slots.map((s, i) => el('div', 'row', `${s.name} · team ${s.team + 1}${s.ready || i === l.host ? ' ✓' : ''}${i === l.host ? ' (host)' : ''}`)));
     start.style.display = driver.player === l.host ? '' : 'none';

@@ -1,6 +1,7 @@
 // Lockstep client: the online match driver (same interface as localDriver, see local.js). Every client runs the whole sim; only commands
 // travel. The relay sends one turn every 100 ms; a turn's commands apply at its first tick, and a client never runs a tick whose turn has
-// not arrived (status 'waiting'). It holds back `buffer` turns (adapts 1..4 to the connection's jitter) so play stays smooth, runs extra
+// not arrived (status 'waiting'). It holds back `buffer` turns, sized to the connection's measured jitter (the 90th percentile of how late
+// turns arrive, over the last 50: a rare spike costs one short stall, not a permanent lag on every order), 1..4; runs extra
 // ticks per frame to catch up after a stall or a rejoin, and reports its hash every HASH_EVERY turns; the relay compares them.
 //
 //   const net = lockstepDriver({ transport: webSocketTransport('wss://relay.example/room-1'), room: 'room-1', name: 'Matt',
@@ -24,7 +25,8 @@ export function lockstepDriver(o) {
   if (!o?.transport || typeof o.makeSim !== 'function') throw new Error('lockstepDriver: transport and makeSim(settings) are required');
   const tr = o.transport, now = o.now ?? (() => performance.now());   // measure: buffer adaptation only, never game state
   const listeners = new Map(), turns = new Map(), snaps = new Map(), netEvents = [];
-  let acc = 0, received = -1, lastWait = 0, buffer = o.buffer ?? 1, adaptive = o.buffer === undefined;
+  let acc = 0, received = -1, buffer = o.buffer ?? 1, adaptive = o.buffer === undefined;
+  const late = [];   // arrival time minus the turn's place in the relay's clock, last 50 turns (ms)
   const d = {
     sim: null, transport: tr, player: -1, key: o.key ?? '', status: 'connecting', lobby: null, settings: null, desyncs: [], log: [], hashes: [],
     get alpha() { return Math.min(1, acc * TICK_RATE); },
@@ -57,14 +59,8 @@ export function lockstepDriver(o) {
       }
       while (acc >= dt && sim.tick < end && ticks < CATCHUP_PER_UPDATE && !sim.ended) { runTick(events); acc -= dt; ticks++; }
       if (sim.ended) d.status = 'ended';
-      else if (acc >= dt) {   // time is due but the turn is not here
-        d.status = 'waiting'; acc = dt;
-        if (adaptive && buffer < 4 && now() - lastWait < 2000) buffer++;
-        lastWait = now();
-      } else {
-        d.status = 'running';
-        if (adaptive && buffer > 1 && now() - lastWait > 10000) { buffer--; lastWait = now(); }
-      }
+      else if (acc >= dt) { d.status = 'waiting'; acc = dt; }   // time is due but the turn is not here
+      else d.status = 'running';
       return { ticks, events };
     },
     /** The snapshot kept at a hash turn (debugSnapshots: true), to compare with another client's after a desync */
@@ -101,7 +97,18 @@ export function lockstepDriver(o) {
         if (!d.sim?.step) throw new Error('lockstepDriver: makeSim(settings) must return a sim');
         d.status = 'running'; acc = 0;
         break;
-      case 'turn': turns.set(m.turn, m.cmds); received = contiguous(); break;
+      case 'turn': {
+        turns.set(m.turn, m.cmds); received = contiguous();
+        if (adaptive && d.settings) {
+          const turnMs = d.settings.turnMs ?? 100;
+          late.push(now() - m.turn * turnMs); if (late.length > 50) late.shift();
+          if (late.length >= 10) {
+            const base = Math.min(...late), sorted = late.map(x => x - base).sort((a, b) => a - b);
+            buffer = Math.max(1, Math.min(4, Math.ceil(sorted[Math.floor(sorted.length * 0.9)] / turnMs)));
+          }
+        }
+        break;
+      }
       case 'catchup': for (const [t, c] of m.turns) turns.set(t, c); received = m.upTo; break;
       case 'desync': d.desyncs.push(m); netEvents.push({ type: 'desync', turn: m.turn, hashes: m.hashes }); break;
       case 'away': case 'back': netEvents.push({ type: m.type, p: m.p }); break;

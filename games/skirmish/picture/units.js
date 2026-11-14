@@ -16,6 +16,13 @@ export function unitLooks() {
     tank: { geometry: (() => { const g = box(5, 1.6, 3); return g; })(), material: mat },
     artillery: { geometry: box(4, 1.4, 2.4), material: mat },
     projectile: { geometry: new THREE.SphereGeometry(0.35, 6, 4), material: new THREE.MeshBasicMaterial({ color: 0xffe9a0 }) },
+    // base building (mode 'base'): buildings sized to their footprint (sim/base-content.js), a worker, crystal fields
+    worker: { geometry: new THREE.CapsuleGeometry(0.3, 0.6, 3, 8).translate(0, 0.6, 0), material: mat },
+    hq: { geometry: box(11, 6, 11), material: mat },
+    depot: { geometry: box(5.5, 2.5, 5.5), material: mat },
+    barracks: { geometry: box(7.5, 4, 7.5), material: mat },
+    factory: { geometry: box(9.5, 5, 9.5), material: mat },
+    crystal: { geometry: new THREE.OctahedronGeometry(2.2).translate(0, 2.2, 0), material: new THREE.MeshStandardMaterial({ color: 0x7fe0ff, emissive: 0x1a5a70, roughness: 0.3 }) },
   };
 }
 

@@ -1876,6 +1876,7 @@ export const metadata = {
    "page": true,
    "documented": true,
    "names": [
+    "takePointer",
     "select",
     "issue",
     "driver",
@@ -1885,6 +1886,8 @@ export const metadata = {
     "ringMaterial",
     "barMaterial",
     "barBackMaterial",
+    "pointerTaken",
+    "waypointMaterial",
     "fog"
    ],
    "sections": [],

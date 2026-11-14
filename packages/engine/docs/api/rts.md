@@ -11,6 +11,7 @@
   - `fog?: boolean` A dark overlay on the ground for what the local team has not seen; false keeps only the fog texture (default true)
 
 ## Methods and properties
+- `rts.takePointer(why?: string) → { remove(): void }` — Borrow the mouse for the game's own pointer mode (placing a building...): the module's selection and orders by click wait until remove()
 - `rts.select(ids: number[]) → readonly number[]` — Select units by entity id. Ids that are not alive, or not the local player's, are dropped. Returns the new selection. Example: `engine.rts.select([engine.rts.sim.entities.find(u => u.owner === 0).id]);`
 - `rts.issue(cmd: Record<string, any>) → string` — Give a command as the local player: { t: 'move', ids, x, z, queue? } with x and z fixed (fx(meters)). Returns '' or why it was refused. Example: `engine.rts.issue({ t: 'move', ids: engine.rts.selection.slice(), x: fx(20), z: fx(-5) });`
 - Properties:
@@ -21,4 +22,6 @@
   - `ringMaterial: import('three').Material` The selection ring's material (neutral gray; restyle it)
   - `barMaterial: import('three').Material` The filled part of a health bar
   - `barBackMaterial: import('three').Material` The empty part behind a health bar
+  - `pointerTaken: boolean` true while the game holds the pointer (takePointer): the module's clicks and drags wait; keys still work
+  - `waypointMaterial: import('three').Material` The lines and dots of the selected units' queued orders
   - `fog: RtsFog | null` The fog overlay and texture; null for an observer or a sim without the vision system

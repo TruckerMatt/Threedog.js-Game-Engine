@@ -47,6 +47,7 @@ export class Controls {
     if (inp.pressed('rts.attackMove')) this.mode = 'amove';
     if (inp.pressed('rts.patrol')) this.mode = 'patrol';
     for (let n = 1; n <= 9; n++) if (inp.pressed(`rts.group${n}`)) this.group(n, inp.down('rts.groupSet'), now);
+    if (this.rts.pointerTaken) { if (this.drag) { this.drag = null; this.box.style.display = 'none'; } return; }   // the game's own pointer mode (placing a building...)
     // the pointer: units are projected once, and only when a click needs them
     if (inp.pressed('rts.order') || inp.released('rts.select')) o.picker.project(o.alpha());
     if (inp.pressed('rts.order')) { if (this.mode) this.mode = null; else this.rightClick(p, shift); }
@@ -116,12 +117,26 @@ export class Controls {
     return true;
   }
 
+  /**
+   * Right click: on a seen enemy, attack; on a resource field with workers selected, gather (base building); on the ground, the units move
+   * and the selected structures (base building) set their rally point there.
+   */
   rightClick(p, shift) {
     if (!this.rts.selection.length) return;
-    const { pair, picker } = this.o, cur = pair.cur, vis = this.o.visible(), me = this.mine();
-    const i = picker.nearest(p.ndcX, p.ndcY, CLICK_PX, j => vis[j] && cur.owner[j] >= 0 && this.sim.players[cur.owner[j]].team !== me);
+    const { pair, picker } = this.o, cur = pair.cur, vis = this.o.visible(), me = this.mine(), sim = this.sim;
+    const i = picker.nearest(p.ndcX, p.ndcY, CLICK_PX, j => vis[j] && cur.owner[j] >= 0 && sim.players[cur.owner[j]].team !== me);
     if (i >= 0) { this.send({ t: 'attack', target: cur.id[i] }, shift); return; }
-    this.pointTo('move', p, shift);
+    const units = this.rts.selection.map(id => sim.get(id)).filter(Boolean);
+    const workers = units.filter(u => sim.kindOf(u).gather), structures = units.filter(u => sim.kindOf(u).structure);
+    if (workers.length && sim.commands?.has('gather')) {
+      const r = picker.nearest(p.ndcX, p.ndcY, CLICK_PX, j => vis[j] && cur.owner[j] < 0 && sim.content.kinds[cur.kind[j]].tags.includes('resource'));
+      if (r >= 0) { this.rts.issue({ t: 'gather', ids: workers.map(u => u.id).slice(0, MAX_IDS), target: cur.id[r] }); return; }
+    }
+    if (structures.length && sim.commands?.has('rally')) {
+      const g = screenToGround(this.e, p.ndcX, p.ndcY);
+      if (g) for (const u of structures) this.rts.issue({ t: 'rally', id: u.id, x: fx(g.x), z: fx(g.z) });
+    }
+    if (structures.length < units.length) this.pointTo('move', p, shift);
   }
 
   /** The local player's team (-1 for an observer) */

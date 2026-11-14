@@ -49,12 +49,15 @@ function play(net, drivers, sec, onFrame, hashes) {
 }
 
 function startMatch(net, drivers) {
-  play(net, drivers, 0.4);
+  // waits on conditions, not times: a slow link takes longer for each handshake
+  const until = (cond, sec = 8) => { for (let f = 0; f < sec * 60 && !cond(); f++) play(net, drivers, 1 / 60); };
+  until(() => drivers.every(d => d.player !== -1 || d.status === 'lobby') && drivers.filter(d => d.lobby).length >= drivers.filter(d => d.player >= 0).length);
   // jitter decides who arrived first: slot 0 is the host, whoever that is
   drivers.filter(d => d.player > 0).forEach(d => d.ready(true));
-  play(net, drivers, 0.4);
+  const players = drivers.filter(d => d.player >= 0).length;
+  until(() => drivers.some(d => d.lobby?.slots.length === players && d.lobby.slots.filter((x, i) => i !== d.lobby.host).every(x => x.ready)));
   drivers.find(d => d.player === 0).start({});
-  play(net, drivers, 0.4);
+  until(() => drivers.every(d => d.sim));
 }
 
 const orders = (d, x, z) => { const ids = d.sim.entities.filter(e => e.owner === d.player).map(e => e.id); if (ids.length) d.issue({ t: 'amove', ids, x: fx(x), z: fx(z) }); };
@@ -101,6 +104,26 @@ export async function run({ check }) {
     const vb = verifyReplay(bad, makeSim);
     check('a tampered replay names the first turn whose hash differs', !vb.ok && vb.firstMismatch && vb.firstMismatch.turn % HASH_EVERY === 0, JSON.stringify(vb.firstMismatch));
     check('a replay is small (JSON under 20 KB for 30 s)', JSON.stringify(rep).length < 20000, String(JSON.stringify(rep).length));
+  }
+
+  // 1b. a bad connection: 200 ms latency, 60 ms jitter, 5% of messages 300 ms late (TCP resends): still in sync, and an order lands within half a second
+  {
+    const net = memoryNetwork({ latency: 200, jitter: 60, spikes: { chance: 0.05, ms: 300 }, seed: 11 });
+    const ds = setup(net, 3);
+    startMatch(net, ds);
+    const hashes = [];
+    let sentAt = -1, appliedAt = -1;
+    play(net, ds, 20, f => {
+      if (f === 60) { orders(ds[0], 0, 0); sentAt = net.now; }
+      if (sentAt >= 0 && appliedAt < 0 && ds[0].sim.entities.some(e => e.owner === ds[0].player && e.orders.length)) appliedAt = net.now;
+      if (f === 400) ds.forEach(d => orders(d, 10, 10));
+    }, hashes);
+    const a = agree(hashes);
+    check('200 ms latency, jitter and 5% late messages: three sims agree on every common tick', ds.every(d => d.sim) && a.compared > 400 && !a.bad, JSON.stringify(a));
+    check('no desync on the bad connection', net.room.desyncs.length === 0);
+    const lag = appliedAt - sentAt;
+    check('an order takes effect within 750 ms on the bad connection (2 x 200 ms network + up to 1 turn + the buffer)', lag > 0 && lag < 750, `${Math.round(lag)} ms, buffer ${ds[0].buffer}`);
+    check('every client keeps up (within a few turns of the newest turn)', ds.every(d => d.describe().behindTurns <= 6), JSON.stringify(ds.map(d => d.describe().behindTurns)));
   }
 
   // 2. a determinism bug in one client is caught by the relay within about a second

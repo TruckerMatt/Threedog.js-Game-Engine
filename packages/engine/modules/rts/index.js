@@ -45,6 +45,7 @@ export function rts(opts) {
   const o = readParams('rts', PARAMS, opts);
   let e = null, pair, draw, marks, fog, minimap, controls, picker, driver, sim;
   let list = Object.freeze([]), selected = new Set(), lastRefused = null;
+  const pointerHolders = new Set();
   const team = () => sim.players[driver.player]?.team ?? -1;
 
   const api = {
@@ -57,7 +58,22 @@ export function rts(opts) {
     get ringMaterial() { return marks.ringMaterial; },
     get barMaterial() { return marks.barMaterial; },
     get barBackMaterial() { return marks.barBackMaterial; },
+    /** The lines and dots of the selected units' queued orders (shift-click a path to see it) */
+    get waypointMaterial() { return marks.waypointMaterial; },
     get fog() { return fog; },
+    /** true while the game holds the pointer (takePointer): the module's own clicks, drags and right clicks wait; keys still work */
+    get pointerTaken() { return pointerHolders.size > 0; },
+    /**
+     * Borrow the mouse for the game's own mode (placing a building, aiming an ability): selection and orders by click wait until remove().
+     * @param {string} why shown in describe
+     * @returns {{ remove(): void }}
+     * @example const h = engine.rts.takePointer('place barracks'); ... h.remove();
+     */
+    takePointer(why) {
+      const h = { why: String(why ?? 'game'), remove: () => { pointerHolders.delete(h); } };
+      pointerHolders.add(h);
+      return h;
+    },
     select(ids) {
       if (!Array.isArray(ids)) throw codedError('module-params', 'engine.rts.select(ids): ids is an array of entity ids, e.g. engine.rts.select([3, 4])');
       const mine = driver.player, keep = [];
@@ -141,7 +157,8 @@ export function rts(opts) {
     describe() {
       const s = sim.describe();
       return { driver: driver.describe(), tick: sim.tick, player: driver.player, selection: list.length, units: pair.cur.n, drawn: draw.drawn, hash: s.hash, players: s.players, ...(s.rejected.length ? { rejected: s.rejected } : {}),
-        fog: fog ? { sum: fog.sum, overlay: !!fog.mesh } : null, ...(lastRefused ? { lastRefused } : {}) };
+        fog: fog ? { sum: fog.sum, overlay: !!fog.mesh } : null, ...(lastRefused ? { lastRefused } : {}),
+        ...(pointerHolders.size ? { pointerTakenBy: [...pointerHolders].map(h => h.why) } : {}) };
     },
   };
 }

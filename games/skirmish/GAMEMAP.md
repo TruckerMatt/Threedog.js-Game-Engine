@@ -63,7 +63,6 @@ Design files: (none)
 - createPicture
 - rts ({ driver, look: unitLooks(), teamColors: TEAM_COLORS })
 - createEffects
-- createHud (driver)
 
 ## Read for this game (per installed module: recipe · api page; core API: `node_modules/threedog/docs/api/engine.md`)
 
@@ -88,17 +87,20 @@ content/*.js is content data: how to write it in `node_modules/threedog/docs/rec
 
 | File | Lines | Description |
 |---|---|---|
-| main.js | 47 | @ts-check skirmish: RTS start (--rts) — a World in Conflict-style reinforcement match against a bot… |
+| main.js | 72 | @ts-check skirmish: RTS start (--rts) — a match against a bot. ?mode=reinforce (default, World in C… |
 | picture/ground.js | 30 | @ts-check The ground drawn from the sim map: one mesh whose heights are the sim's (so what you see … |
 | picture/index.js | 32 | @ts-check skirmish picture: wiring only, no values. Each part is one file here and writes plain thr… |
 | picture/lights.js | 33 | @ts-check skirmish lights: a sun that follows uSunDir and uDaylight, and one ambient fill. update()… |
 | picture/materials.js | 11 | @ts-check skirmish materials by name: other code asks for picture.materials.<name> and never builds… |
 | picture/palette.js | 12 | @ts-check skirmish palette: the picture's colors and key values, one copy for the whole game; light… |
-| picture/units.js | 69 | @ts-check How skirmish's units look, and the shots and explosions. Plain three.js: simple shapes fo… |
+| picture/units.js | 76 | @ts-check How skirmish's units look, and the shots and explosions. Plain three.js: simple shapes fo… |
+| sim/base-content.js | 20 | skirmish's base-building units (C&C / StarCraft style): an HQ that trains workers and stores resour… |
 | sim/content.js | 18 | skirmish's units, weapons and armor: plain numbers (meters, seconds, degrees). loadContent() checks… |
-| sim/index.js | 23 | skirmish's match builder: the ONE place a match is made. Single player, online play (the relay's se… |
-| sim/map.js | 21 | skirmish's battlefield as sim data. Heights block sight (take the hills!); blocked cells are impass… |
-| ui/hud.js | 92 | @ts-check skirmish's HUD: budget, call-in buttons, arriving drops, capture points, score, the end o… |
+| sim/index.js | 46 | skirmish's match builder: the ONE place a match is made. Single player, online play (the relay's se… |
+| sim/map.js | 23 | skirmish's battlefield as sim data. Heights block sight (take the hills!); blocked cells are impass… |
+| sim/mission.js | 69 | skirmish mission 1, "Hold the North Ford": a scripted mission written as one sim system, with no en… |
+| ui/base-hud.js | 101 | @ts-check skirmish's base-building HUD (mode 'base'): resources and supply, a build menu with a pla… |
+| ui/hud.js | 93 | @ts-check skirmish's HUD: budget, call-in buttons, arriving drops, capture points, score, the end o… |
 
 ## NPCs (content/npcs.js)
 

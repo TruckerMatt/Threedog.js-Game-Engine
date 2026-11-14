@@ -51,7 +51,7 @@ export const TICK_RATE: 20;
 export interface UnitDef {
   hp: number; speed?: number; radius: number; sight?: number; armor?: string; weapons?: string[]; turnRate?: number; cost?: number;
   air?: boolean; tags?: string[]; build?: { time?: number; requires?: string[] }; produces?: string[]; supply?: number;
-  gather?: { amount?: number; time?: number }; structure?: boolean; footprint?: [number, number]; income?: number; capture?: boolean; deployTime?: number;
+  gather?: { amount?: number; time?: number }; structure?: boolean; footprint?: number[]; income?: number; capture?: boolean; deployTime?: number;
 }
 export interface WeaponDef {
   range: number; minRange?: number; damage: number; cooldown: number; damageType?: string; projectileSpeed?: number; splash?: number;
@@ -65,7 +65,7 @@ export interface Weapon { name: string; range: Fixed; minRange: Fixed; damage: F
 /** A unit kind after loading: numbers are fixed or ticks */
 export interface Kind {
   name: string; index: number; hp: Fixed; speed: Fixed; radius: Fixed; sight: Fixed; turnRate: number; armor: string; air: boolean; structure: boolean;
-  cost: number; supply: number; income: Fixed; capture: boolean; deployTime: number; tags: string[]; produces: string[]; footprint: [number, number] | null;
+  cost: number; supply: number; income: Fixed; capture: boolean; deployTime: number; tags: string[]; produces: string[]; footprint: number[] | null;
   build: { time: number; requires: string[] } | null; gather: { amount: number; time: number } | null; weapons: Weapon[]; range: Fixed; hash: number;
 }
 export interface Content {
@@ -210,7 +210,7 @@ export interface LockstepDriver extends Driver {
 export function lockstepDriver(o: { transport: Transport; makeSim: (settings: MatchSettings) => Sim; room?: string; name?: string; version?: string;
   contentHash?: number; mapHash?: number; observer?: boolean; key?: string; buffer?: number; debugSnapshots?: boolean; now?: () => number }): LockstepDriver;
 export function webSocketTransport(url: string): Transport;
-export function memoryNetwork(o?: { latency?: number; jitter?: number; seed?: number; room?: Record<string, unknown> }): {
+export function memoryNetwork(o?: { latency?: number; jitter?: number; spikes?: { chance: number; ms: number }; seed?: number; room?: Record<string, unknown> }): {
   room: RelayRoom; readonly now: number; connect(): Transport & { conn: unknown }; drop(t: Transport): void; advance(ms: number): void;
 };
 export class RelayRoom {

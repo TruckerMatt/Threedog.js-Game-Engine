@@ -168,6 +168,19 @@ window.rtsCases = async () => {
       bars: e.scene.getObjectByName('rts:bars')?.count };
   }
 
+  // queued orders of a selected unit draw as a path with a dot per waypoint; deselected, nothing is drawn
+  {
+    const { e, a } = await make();
+    e.rts.select([a.id]);
+    e.rts.issue({ t: 'move', ids: [a.id], x: fx(10), z: fx(0) });
+    e.rts.issue({ t: 'move', ids: [a.id], x: fx(10), z: fx(20), queue: 1 });
+    e.step(0.3);
+    const count = n => e.scene.getObjectByName(n)?.count ?? 0;
+    out.paths = { segs: count('rts:paths'), dots: count('rts:waypoints') };
+    e.rts.select([]); e.step(0.1);
+    out.paths.after = count('rts:paths');
+  }
+
   // a unit of a kind with its own look, team colors, controls: false
   {
     const geometry = new THREE.BoxGeometry(1, 1, 1);

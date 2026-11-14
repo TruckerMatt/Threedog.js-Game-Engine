@@ -36,6 +36,7 @@ export const specs = [
       check('rts:fire and rts:hit come in meters from where the team sees; the fight can kill', V.fire > 0 && V.hit > 0 && Math.abs(V.firstFire.x) < 128 && V.firstFire.weapon === 'rifle' && V.firstHit.damage === 40, J(V));
       check('rts:spawn only for what the team sees: the unit in sight, not the one in the fog', V.spawn === 1 && V.spawnIds[0] === V.near2, J(V));
       check('selected or hurt units get health bars', V.bars >= 1, J(V));
+      check('a selected unit\'s two queued moves draw two path segments and two waypoint dots; deselected, none', r.paths.segs === 2 && r.paths.dots === 2 && r.paths.after === 0, J(r.paths));
       const L = r.look;
       check('look: the game geometry, scale and lift are used; teamColors tint; controls / minimap / fog off build none', L.sameGeometry && L.scale === 2 && L.lift > 2.9 && L.color0[0] === 1 && L.color0[2] === 0 && L.noMinimap && L.noBox && L.noOverlay && L.texture, J(L));
       check('unuse leaves the game\'s geometry alone', L.geometryAlive, J(L));

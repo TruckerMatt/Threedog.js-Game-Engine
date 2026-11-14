@@ -24,7 +24,9 @@ export function webSocketTransport(url) {
 
 /**
  * An in-process relay and network for tests: one room, a fake clock in ms, per-message latency + jitter (seeded, order kept per link).
- * @param {{ latency?: number, jitter?: number, seed?: number, room?: object }} [o] room: options for RelayRoom (leaveAfterMs, observerDelay...)
+ * spikes: { chance, ms } delays that share of messages by ms more: packet loss on a WebSocket (TCP) shows up as a resend, so as a late message
+ * that holds up the ones behind it, never as a lost one.
+ * @param {{ latency?: number, jitter?: number, spikes?: { chance: number, ms: number }, seed?: number, room?: object }} [o] room: options for RelayRoom
  */
 export function memoryNetwork(o = {}) {
   let clock = 0, seq = 0, rnd = (o.seed ?? 7) >>> 0 || 7;
@@ -33,7 +35,8 @@ export function memoryNetwork(o = {}) {
   const queue = [];   // { at, seq, fn }
   const lastAt = new Map();
   const delay = link => {
-    const at = Math.max(clock + (o.latency ?? 0) + rand() * (o.jitter ?? 0), lastAt.get(link) ?? 0);   // never overtake an earlier message
+    const spike = o.spikes && rand() < o.spikes.chance ? o.spikes.ms : 0;
+    const at = Math.max(clock + (o.latency ?? 0) + rand() * (o.jitter ?? 0) + spike, lastAt.get(link) ?? 0);   // never overtake an earlier message
     lastAt.set(link, at);
     return at;
   };

@@ -18,3 +18,5 @@ export const points = [
   { id: 'north-ford', x: 0, z: 120 }, { id: 'south-ford', x: 0, z: -120 },
   { id: 'west-hill', x: -70, z: 90, value: 2 }, { id: 'east-hill', x: 70, z: -90, value: 2 },
 ];
+/** Base-building starts (mode 'base'), one per player in order */
+export const bases = [{ x: -240, z: 0 }, { x: 240, z: 0 }, { x: -240, z: 150 }, { x: 240, z: -150 }];

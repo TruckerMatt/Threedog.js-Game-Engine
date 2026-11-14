@@ -18,6 +18,7 @@ Look up the task, then read only that section.
 | Online play | [Multiplayer](#multiplayer) |
 | Replays, observers | [Replays](#replays) |
 | My own rule or system | [Your own systems](#your-own-systems) |
+| A scripted mission or campaign | [Missions](#missions) |
 | Something desynced | [Determinism](#determinism) |
 | Check my work | [Tools](#tools) |
 
@@ -69,7 +70,7 @@ All positions are fixed: `fx(meters)`. From the engine: `engine.rts.issue(cmd)` 
 | attack | ids, target | |
 | stop, hold | ids | |
 | reinforce | kinds: [names], x, z | reinforcement mode |
-| build | kind, x, z | base mode; `sim.base.canPlace(p, kind, x, z)` says why not |
+| build | kind, x, z | base mode; `sim.base.canPlace(p, kind, x, z)` says why not (a placement ghost colors itself with it; hold the mouse with `engine.rts.takePointer()`) |
 | produce, cancel | id, kind, count? / id | base mode |
 | rally | id, x, z | base mode |
 | gather | ids, target | base mode |
@@ -121,6 +122,14 @@ A system is `{ name, init?(sim), step?(sim), hash?(sim, hasher), save?(sim), loa
 spawned?(sim, entity) }`, added to `extra` (order matters: the same list everywhere). Keep it in `sim/` so rule R72 checks it. Add entity
 fields with `sim.field(name, default)` (hashed and saved); keep your own state in `save`/`load` and mix it into `hash`. New commands:
 `sim.defineCommand(type, { validate(sim, cmd) → '' | reason, apply(sim, cmd) })`. Events for picture and sound: `sim.emit({ type, ... })`.
+
+## Missions
+
+A mission is one more system in your `sim/`: phases that advance on sim facts (a point taken, a timer, units lost), enemy waves spawned
+and ordered with the same commands a player uses (`sim.run({ p: 1, t: 'amove', ... })`), messages as `sim.emit({ type: 'mission', text })`,
+and `sim.ended` / `sim.winner` when it is won or lost. Keep its state in `save`/`load` and mix it into `hash`, like any system: then it saves,
+replays and even runs online. The `--rts` template's `sim/mission.js` ("Hold the North Ford") is a complete example; its HUD reads
+`sim.mission.objective` and `sim.mission.message`. No engine code is involved.
 
 ## Determinism
 
