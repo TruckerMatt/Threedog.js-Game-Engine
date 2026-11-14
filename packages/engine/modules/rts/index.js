@@ -73,11 +73,23 @@ export function rts(opts) {
     },
   };
 
+  /** Step the driver by dt seconds of real time and follow up: views, visibility, selection, fog, events */
+  function advance(dt) {
+    const before = pair.cur, { ticks, events } = driver.update(dt);
+    if (!ticks) return;
+    pair.advance();
+    draw.refreshVisible(pair, team());
+    draw.rememberShots();
+    if (list.some(id => !sim.get(id))) api.select(list);   // the dead leave the selection
+    fog?.update();
+    reemit(e, sim, pair, before, events, team());
+  }
+
   /** Four corners of the camera's view on the ground, for the minimap (fewer when a corner looks past the horizon) */
   const footprint = () => [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([x, y]) => screenToGround(e, x, y)).filter(Boolean);
 
   return {
-    name: 'rts', skipKind: 'none', noSkip: 'the match runs in real time on its driver; a time jump does not advance it', type: 'rules', label: 'RTS', params: PARAMS, options: opts,
+    name: 'rts', skipKind: 'step', type: 'rules', label: 'RTS', params: PARAMS, options: opts,
     optional: ['cameraRig'], stage: 'gameplay',
     install(engine, ctx) {
       e = engine; driver = o.driver; sim = driver.sim;
@@ -115,15 +127,12 @@ export function rts(opts) {
       defineOps(ctx, api);
       return api;
     },
-    fixed(dt) {
-      const before = pair.cur, { ticks, events } = driver.update(dt);
-      if (!ticks) return;
-      pair.advance();
-      draw.refreshVisible(pair, team());
-      draw.rememberShots();
-      if (list.some(id => !sim.get(id))) api.select(list);   // the dead leave the selection
-      fog?.update();
-      reemit(e, sim, pair, before, events, team());
+    fixed(dt) { advance(dt); },
+    // a time jump (engine.skip, threedog shot --wait) plays the match forward tick by tick on a local or replay driver: tools can say "two
+    // minutes later" and get the real match. An online (lockstep) match cannot run ahead of the network, so it only advances in real time
+    skip(dt) {
+      if (driver.describe().driver === 'lockstep') return;
+      for (let left = dt; left > 1e-9; left -= 0.5) advance(Math.min(0.5, left));
     },
     frame(dt) {
       controls?.frame();

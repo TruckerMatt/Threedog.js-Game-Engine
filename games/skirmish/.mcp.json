@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "threedog": {
+      "command": "node",
+      "args": [
+        "../../packages/tools/bin/threedog.mjs",
+        "mcp"
+      ]
+    }
+  }
+}

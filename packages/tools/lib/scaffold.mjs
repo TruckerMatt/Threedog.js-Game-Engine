@@ -2,6 +2,7 @@
 //   templates/game       the base: a blank scene with a camera, empty content files, a gray picture/ folder (no gameplay, no genre assumed)
 //   templates/openworld  an overlay for --open-world: generated terrain, day/night sky, follow camera, a player (a main.js only)
 //   templates/sceneonly  an overlay for --scene-only: a main.js with no content/ and no assets.js (copyTemplates leaves those two out of the base): a showcase scene, nothing placed
+//   templates/rts        an overlay for --rts: a reinforcement match against a bot (sim/ for the rules, picture/ ground and units, ui/hud.js, online with ?relay=)
 //   templates/pixel      an overlay for --pixel: a sprite character in a pixel-snapped orthographic view, input, interaction, dialogue, saves (main.js + picture/sprites.js)
 // Why blank by default: an open world is one genre among many (a puzzle, a card table, a side-scroller start from nothing), and a default that has
 // to be deleted first steers every new game toward the same shape. Overlays are copied FIRST so their files win over the base.
@@ -43,6 +44,7 @@ const GAMEPLAY = {
   clean: 'This game starts blank (a scene, a camera, a start screen, autosave, an Esc menu) and has no gameplay yet; build what DESIGN.md describes. `npx threedog init --open-world` in a new folder starts on generated ground with a player.',
   pixel: 'This game starts from `--pixel`: a gray floor, a placeholder sprite character in a pixel-snapped orthographic view (`pixelSize`, `pixelSprite`, `pixelSnap`), an NPC with dialogue, a pickup, a start screen, autosave and an Esc menu, no gameplay yet; build what DESIGN.md describes and replace the placeholder sprite sheet in picture/sprites.js with real art.',
   sceneOnly: 'This game starts from `--scene-only`: a scene, a camera, picture/, a start screen, autosave and an Esc menu; it has no `content/` and no `assets.js` (add them with `engine.use(content())` when something must be placed and saved); build what DESIGN.md describes.',
+  rts: 'This game starts from `--rts`: a World in Conflict-style reinforcement match against a bot on the deterministic sim in `sim/` (units, map, capture points, rules; read `node_modules/@threedog/rts/docs/RTS.md` before changing it, rule R72 checks it), drawn by the engine `rts()` module (recipe 67-rts.md) with a ground mesh from the sim map, simple unit shapes in `picture/units.js` and a HUD in `ui/hud.js`. `?relay=ws://localhost:8788&room=test` plays online (`npx threedog rts relay`). Check gameplay headless with `npx threedog rts match` and `npx threedog rts desync`.',
   openWorld: 'This game starts from `--open-world`: generated ground, a day/night sky, a follow camera, a player, a start screen, autosave and an Esc menu, no gameplay yet; build what DESIGN.md describes and remove what it does not need.',
 };
 
@@ -72,14 +74,15 @@ const ROUTE = {
  *  silently making the wrong game is worse). env = process.env (npm eats flags: npm_config_* fallback) */
 export function parseArgs(argv, env = {}) {
   let p;
-  try { p = parseOptions(argv, { flags: ['open-world', 'pixel', 'scene-only', 'webgl'], positional: true }); } catch (e) { return { error: e.message }; }
+  try { p = parseOptions(argv, { flags: ['open-world', 'pixel', 'scene-only', 'rts', 'webgl'], positional: true }); } catch (e) { return { error: e.message }; }
   if (p.rest.length > 1) return { error: `one name or folder only, got ${p.rest.join(' ')}` };
   const openWorld = !!p.opt['open-world'] || env.npm_config_open_world === 'true';
   const pixel = !!p.opt.pixel || env.npm_config_pixel === 'true';
   const sceneOnly = !!p.opt['scene-only'] || env.npm_config_scene_only === 'true';
-  if (openWorld + pixel + sceneOnly > 1) return { error: '--open-world, --pixel and --scene-only are different starting points: pick one' };
+  const rts = !!p.opt.rts || env.npm_config_rts === 'true';
+  if (openWorld + pixel + sceneOnly + rts > 1) return { error: '--open-world, --pixel, --scene-only and --rts are different starting points: pick one' };
   const webgl = !!p.opt.webgl || env.npm_config_webgl === 'true';
-  return { name: p.rest[0], openWorld, pixel, sceneOnly, webgl };
+  return { name: p.rest[0], openWorld, pixel, sceneOnly, rts, webgl };
 }
 
 /** The "Already here" table: rows of the engine's AI.md (the one task table). Without the engine docs next to the tools: a pointer, not a stale copy */
@@ -89,28 +92,29 @@ function defaultLayerTable() {
 }
 
 /** Fill the placeholders of one text file */
-export function render(text, { name, openWorld, pixel, sceneOnly, webgl }) {
+export function render(text, { name, openWorld, pixel, sceneOnly, rts, webgl }) {
   const route = ROUTE[webgl ? 'webgl' : 'webgpu'];
-  let out = text.replaceAll('__NAME__', name).replaceAll('__GAMEPLAY_NOTE__', GAMEPLAY[pixel ? 'pixel' : sceneOnly ? 'sceneOnly' : openWorld ? 'openWorld' : 'clean']);
+  let out = text.replaceAll('__NAME__', name).replaceAll('__GAMEPLAY_NOTE__', GAMEPLAY[pixel ? 'pixel' : sceneOnly ? 'sceneOnly' : rts ? 'rts' : openWorld ? 'openWorld' : 'clean']);
   out = out.replace('__DEFAULT_LAYER__', () => defaultLayerTable());
   out = out.replace(/__TSL_IMPORT__\r?\n/g, route.__TSL_IMPORT__ && `${route.__TSL_IMPORT__}\n`);
   for (const [word, value] of Object.entries(route)) out = out.replaceAll(word, value);
   return out;
 }
 
-/** package.json dependencies: --open-world adds @threedog/terrain-noise (its main.js imports it; the blank base does not) */
-export function applyDeps(deps, { openWorld }) {
+/** package.json dependencies: --open-world adds @threedog/terrain-noise, --rts adds @threedog/rts (their main.js imports them; the blank base does not) */
+export function applyDeps(deps, { openWorld, rts }) {
   const out = { ...deps };
   if (openWorld) out['@threedog/terrain-noise'] ??= '^1.0.1';
+  if (rts) out['@threedog/rts'] ??= '^0.1.0';
   return out;
 }
 
 /** Copy the template layers (overlay first, base after) into dir. Existing files are kept (so the overlay wins and init never overwrites).
  *  skipPackage: leave package.json to the caller. Returns { made, kept }. */
 export function copyTemplates(dir, opts, { skipPackage = false } = {}) {
-  const layers = [...(opts.pixel ? ['pixel'] : opts.sceneOnly ? ['sceneonly'] : opts.openWorld ? ['openworld'] : []), 'game'], made = [], kept = [];
-  // --scene-only: the base's content/ and assets.js are what main.js no longer imports, so they are not written at all
-  const left = e => opts.sceneOnly && (e.name === 'assets.js' || (e.isDirectory() && e.name === 'content'));
+  const layers = [...(opts.pixel ? ['pixel'] : opts.sceneOnly ? ['sceneonly'] : opts.rts ? ['rts'] : opts.openWorld ? ['openworld'] : []), 'game'], made = [], kept = [];
+  // --scene-only and --rts: the base's content/ and assets.js are what main.js no longer imports, so they are not written at all
+  const left = e => (opts.sceneOnly || opts.rts) && (e.name === 'assets.js' || (e.isDirectory() && e.name === 'content'));
   const walk = (from, to, top) => {
     mkdirSync(to, { recursive: true });
     for (const e of readdirSync(from, { withFileTypes: true })) {

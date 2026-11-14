@@ -3,6 +3,7 @@
 // --open-world: overlays templates/openworld (generated terrain, day/night sky, follow camera, a player).
 // --pixel: overlays templates/pixel (a sprite character, pixelSize, pixelSnap camera, input, interaction, dialogue, saves). Not together with --open-world.
 // --scene-only: overlays templates/sceneonly and leaves the base's content/ and assets.js out (a showcase scene with nothing placed). One start flag at a time.
+// --rts: overlays templates/rts and leaves content/ and assets.js out: a reinforcement RTS match against a bot (sim/, picture/, ui/hud.js), online with ?relay=.
 // The game runs on WebGPU with TSL shaders; --webgl: on WebGL with GLSL shaders (lib/scaffold.mjs says why it is chosen here).
 // Copies the template layers to games/<name>/, replacing __NAME__ in files with the name; links node_modules/<name>, generates GAMEMAP and runs check (scoped to the new game).
 // It does not build or touch package-lock.json: a smoke test built a ~10 MB dist/ into the new folder, and `npm install --package-lock-only` rewrote the
@@ -17,7 +18,7 @@ import { ROOT, TOOLS, GAMES, rel, workspaces } from './paths.mjs';
 
 // npm swallows flags in npm run new-game name --open-world (they become npm config and never reach argv): use `npm run new-game -- name --open-world`; the npm_config_* env vars are read as a fallback (parseArgs)
 const opts = parseArgs(process.argv.slice(2), process.env);
-const USAGE = 'Usage: npm run new-game -- name [--open-world | --pixel] [--webgl] (name: lowercase letters, digits and hyphens only, e.g. my-farm)';
+const USAGE = 'Usage: npm run new-game -- name [--open-world | --pixel | --rts] [--webgl] (name: lowercase letters, digits and hyphens only, e.g. my-farm)';
 if (opts.error) { console.error(opts.error + '\n' + USAGE); process.exit(1); }
 const name = opts.name;
 if (!name) { console.error(USAGE); process.exit(1); }
@@ -37,7 +38,7 @@ writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
 // MCP for Claude Code opened in the game folder: plain node on this repo's tools (npx costs ~2.5 s and needs `cmd /c` on Windows); the path is relative so the repo can move
 const mcpBin = relative(dir, join(TOOLS, 'bin', 'threedog.mjs')).replaceAll('\\', '/');
 writeMcp(join(dir, '.mcp.json'), mcpBin);
-console.log(`✓ created ${rel(dir)} (${opts.pixel ? 'pixel 2.5D' : opts.openWorld ? 'open world' : 'blank'}, ${opts.webgl ? 'WebGL, GLSL shaders' : 'WebGPU, TSL shaders'})`);
+console.log(`✓ created ${rel(dir)} (${opts.pixel ? 'pixel 2.5D' : opts.rts ? 'RTS' : opts.openWorld ? 'open world' : 'blank'}, ${opts.webgl ? 'WebGL, GLSL shaders' : 'WebGPU, TSL shaders'})`);
 
 // Workspace link node_modules/<name> → the game directory: the path npm itself gives a workspace whose package.json name is <name> (the template's
 // name is the plain game name, see templates/game/package.json). A junction needs no administrator rights on Windows, and non-ASCII paths are fine.
