@@ -71,7 +71,8 @@ Taking over a game: its status notes first. A new feature: docs/AI.md or threedo
 - UI, menus, HUD, languages, settings, photo mode: docs/recipes/26-ui-parts.md §1, 26-ui-parts.md §6
 - Action game: hp, attacks, enemy AI, drops: docs/recipes/32-action-game.md §1
 - Ambient occlusion, soft shadows: docs/recipes/52-around-the-picture.md
-- Many bullets, debris, enemy crowds, flocks: docs/recipes/65-swarm.md §"Which tool for many things"
+- Many bullets, debris: docs/recipes/65-swarm.md §"Which tool for many things"
+- Enemy crowds, flocks: docs/recipes/65-swarm.md §"Which tool for many things"
 - RTS units, fog, minimap: docs/recipes/67-rts.md
 
 ## Project, world, content

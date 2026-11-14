@@ -54,7 +54,6 @@ export const FACTORIES = {
 
 /** engine.<group> -> task words: the groups of docs/api-surface.txt "engine sub-objects" */
 export const GROUPS = {
-  rts: 'select soldiers and give them orders',
   adaptive: 'lower the resolution when the framerate drops',
   assets: 'load a model file',
   audio: 'play a sound effect',

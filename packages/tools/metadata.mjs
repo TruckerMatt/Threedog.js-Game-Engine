@@ -173,7 +173,7 @@ async function build() {
   }
   for (const file of [P.MODULES_REL, P.CORE_REL].flatMap(d => walk(d)).filter(isContract)) {
     const c = (await load(file)).default;
-    contracts[c.name] = { file, ...(c.kind && { kind: c.kind }), api: c.api ?? [], internal: internalOf(c, file), fields: c.fields ?? [] };
+    contracts[c.name] = { file, ...(c.kind && { kind: c.kind }), api: c.api ?? [], internal: internalOf(c, file), fields: c.fields ?? [], optional: Object.keys(c.optional ?? {}) };
   }
   const fields = Object.fromEntries(Object.entries(PLACEMENT_FIELDS).map(([shape, t]) => [shape, schemaInfo(parseSchema(`fields ${shape}`, t))]));
   for (const [name, d] of Object.entries(docs)) if (!d) problems.push(`section ${name} of module ${sections[name].owner} has no desc`);

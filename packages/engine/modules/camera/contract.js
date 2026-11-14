@@ -6,7 +6,9 @@
 export default {
   name: 'cameraRig',
   api: ['forward', 'right', 'follow', 'focusPoint', 'screenToGround'],
-  fields: ['target'],   // what follow() follows: a ragdoll checks it before borrowing the camera, and leaves a camera the game moved elsewhere
+  fields: ['target'],
+  // a camera that can jump its view to a point offers moveTo(position, { instant? }); the rts module's minimap and control-group recall call it when it is there
+  optional: { moveTo: v => typeof v === 'function' },   // what follow() follows: a ragdoll checks it before borrowing the camera, and leaves a camera the game moved elsewhere
   ops: [],
   events: [],
   saves: {},

@@ -173,7 +173,7 @@ out.push('', `Hits on the English-word names: ${known.length - clear.length} (pr
 // Where a member read across folders is stated when no public page has it: its contract, or @internal on its definition (a method, a getter, a this.x = line)
 function stated(mod, member) {
   const c = metadata.contracts?.[mod];
-  if (c && [...c.api, ...c.fields].includes(member)) return 'contract';
+  if (c && [...c.api, ...c.fields, ...(c.optional ?? [])].includes(member)) return 'contract';
   const folder = folderOfModule.get(ownFolder(mod)) ?? ownFolder(mod) ?? mod;
   const named = n => (ts.isExpressionStatement(n) && ts.isBinaryExpression(n.expression) && ts.isPropertyAccessExpression(n.expression.left) ? n.expression.left.name.text : n.name?.getText());
   let hit = null;

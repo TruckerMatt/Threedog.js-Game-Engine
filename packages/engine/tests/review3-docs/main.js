@@ -7,6 +7,7 @@ import * as TD from '../../index.js';
 import * as TSL from '../../render/fx/index.js';
 import * as NOISE from '@threedog/terrain-noise';
 import * as POST from '@threedog/post-effects';
+import * as RTS from '@threedog/rts';
 import { serve } from '../../core/threads/threadServe.js';
 import * as PIXEL from '../../core/scene/pixel.js';
 import * as GRID from '../../core/scene/grid.js';
@@ -27,7 +28,7 @@ const made = [];
 // pixelSize decides the render resolution itself, and createEngine refuses both
 const createEngine = (o = {}) => { const { pixelRatio, ...own } = base, e = TD.createEngine({ ...own, ...(o.pixelSize ? null : { pixelRatio }), saveKey: `r3doc-${++n}`, ...o }); made.push(e); return e; };
 const MODS = { three: THREE, 'three/webgpu': WEBGPU, 'three/tsl': THREE_TSL, threedog: { ...TD, createEngine }, 'threedog/tsl': TSL, 'threedog/worker': { serve },
-  'threedog/pixel': PIXEL, 'threedog/grid': GRID, 'threedog/layers': LAYERS, '@threedog/terrain-noise': NOISE, '@threedog/post-effects': POST,
+  'threedog/pixel': PIXEL, 'threedog/grid': GRID, 'threedog/layers': LAYERS, '@threedog/terrain-noise': NOISE, '@threedog/post-effects': POST, '@threedog/rts': RTS,
   'three/addons/loaders/GLTFLoader.js': { GLTFLoader }, 'three/addons/postprocessing/EffectComposer.js': { EffectComposer }, 'three/addons/postprocessing/Pass.js': PASS, 'three/addons/postprocessing/LUTPass.js': { LUTPass }, 'three/addons/objects/Reflector.js': { Reflector }, 'three/addons/utils/BufferGeometryUtils.js': BGU, 'three/addons/math/SimplexNoise.js': { SimplexNoise }, '@threedog/post-effects/tsl': POST_TSL, 'some-asset-pack': new Proxy({}, { has: () => true, get: () => () => ({}) }) };
 // 相对路径指向读者自己的文件，这里没有：给空壳，让块继续往下跑
 const mod = name => { if (name in MODS) return MODS[name]; if (/^\.\.?\//.test(name)) return new Proxy({}, { get: (t, k) => k === Symbol.toPrimitive ? undefined : function stub() {} }); throw new Error(`NOIMPORT ${name}`); };
@@ -57,6 +58,9 @@ const withTime = (p, ms) => Promise.race([p, new Promise((_, no) => setTimeout((
 window.hasImport = (src, name) => !(src in MODS) || name in MODS[src];
 window.freshKitchen = kitchen;
 window.TD = TD;
+// a small RTS match driver for lines that say rts({ driver }) (the capability card test, recipe 67's blocks)
+window.rtsDriver = () => RTS.localDriver(RTS.createMatch({ seed: 1, content: RTS.loadContent({ units: { grunt: { hp: 100, speed: 5, radius: 0.6 } } }),
+  map: RTS.createMap({ width: 64, depth: 64 }), players: [{ team: 0 }, { team: 1 }] }), { player: 0 });
 
 /** 跑一篇文档的所有块。每块：{ n, line, code } → { n, line, kind, msg } */
 window.runDoc = async blocks => {

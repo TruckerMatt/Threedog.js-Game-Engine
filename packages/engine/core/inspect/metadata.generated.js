@@ -3177,7 +3177,8 @@ export const metadata = {
     "totalDays",
     "isDay",
     "daylight"
-   ]
+   ],
+   "optional": []
   },
   "cameraRig": {
    "file": "packages/engine/modules/camera/contract.js",
@@ -3191,6 +3192,9 @@ export const metadata = {
    "internal": [],
    "fields": [
     "target"
+   ],
+   "optional": [
+    "moveTo"
    ]
   },
   "character": {
@@ -3234,7 +3238,8 @@ export const metadata = {
     "moveAmount",
     "stateMark",
     "mover"
-   ]
+   ],
+   "optional": []
   },
   "characters": {
    "file": "packages/engine/modules/characters/contract.js",
@@ -3254,7 +3259,8 @@ export const metadata = {
    ],
    "fields": [
     "kit"
-   ]
+   ],
+   "optional": []
   },
   "collider3d": {
    "file": "packages/engine/modules/rigid/collider3d.contract.js",
@@ -3265,7 +3271,8 @@ export const metadata = {
     "sweep"
    ],
    "internal": [],
-   "fields": []
+   "fields": [],
+   "optional": []
   },
   "collision": {
    "file": "packages/engine/modules/collision/contract.js",
@@ -3290,7 +3297,8 @@ export const metadata = {
     "blockedVersion",
     "maxClimb",
     "grid"
-   ]
+   ],
+   "optional": []
   },
   "dialogue": {
    "file": "packages/engine/modules/gameplay/dialogue.contract.js",
@@ -3304,7 +3312,8 @@ export const metadata = {
    "fields": [
     "active",
     "state"
-   ]
+   ],
+   "optional": []
   },
   "flow": {
    "file": "packages/engine/modules/flow/contract.js",
@@ -3316,7 +3325,8 @@ export const metadata = {
    "internal": [],
    "fields": [
     "state"
-   ]
+   ],
+   "optional": []
   },
   "ground": {
    "file": "packages/engine/core/scene/ground.contract.js",
@@ -3329,7 +3339,8 @@ export const metadata = {
    "internal": [],
    "fields": [
     "waterLevel"
-   ]
+   ],
+   "optional": []
   },
   "interactions": {
    "file": "packages/engine/modules/gameplay/interactions.contract.js",
@@ -3341,7 +3352,8 @@ export const metadata = {
    "internal": [
     "pick"
    ],
-   "fields": []
+   "fields": [],
+   "optional": []
   },
   "inventory": {
    "file": "packages/engine/modules/gameplay/inventory.contract.js",
@@ -3365,7 +3377,8 @@ export const metadata = {
    "internal": [
     "renameIds"
    ],
-   "fields": []
+   "fields": [],
+   "optional": []
   },
   "level": {
    "file": "packages/engine/modules/level/contract.js",
@@ -3380,7 +3393,8 @@ export const metadata = {
     "markers",
     "ready",
     "heightfield"
-   ]
+   ],
+   "optional": []
   },
   "mover": {
    "file": "packages/engine/modules/characters/mover.contract.js",
@@ -3391,6 +3405,10 @@ export const metadata = {
    "internal": [],
    "fields": [
     "name"
+   ],
+   "optional": [
+    "dispose",
+    "leave"
    ]
   },
   "nav": {
@@ -3417,7 +3435,8 @@ export const metadata = {
     "meshes",
     "version",
     "revision"
-   ]
+   ],
+   "optional": []
   },
   "particles": {
    "file": "packages/engine/modules/particles/contract.js",
@@ -3428,7 +3447,8 @@ export const metadata = {
     "count"
    ],
    "internal": [],
-   "fields": []
+   "fields": [],
+   "optional": []
   },
   "quests": {
    "file": "packages/engine/modules/gameplay/quests.contract.js",
@@ -3440,7 +3460,8 @@ export const metadata = {
     "list"
    ],
    "internal": [],
-   "fields": []
+   "fields": [],
+   "optional": []
   },
   "vehicle": {
    "file": "packages/engine/modules/characters/vehicle.contract.js",
@@ -3455,6 +3476,12 @@ export const metadata = {
     "speed",
     "driver",
     "object"
+   ],
+   "optional": [
+    "seats",
+    "hideDriver",
+    "passengers",
+    "gone"
    ]
   }
  },
