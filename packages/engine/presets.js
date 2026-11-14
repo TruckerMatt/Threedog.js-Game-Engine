@@ -90,6 +90,12 @@ export const presets = Object.freeze({
     dialogNumbers: Object.freeze(Object.fromEntries(Array.from({ length: 9 }, (_, i) => ['choice' + (i + 1), Object.freeze(['Digit' + (i + 1), 'Numpad' + (i + 1)])]))),
     /** rtsCamera(): Q / R turn the view */
     rtsRotate: Object.freeze({ rotateLeft: Object.freeze(['KeyQ']), rotateRight: Object.freeze(['KeyR']) }),
+    /** rts(): left button selects, right button orders, A / S / H / P attack-move / stop / hold / patrol, Shift queues and adds, 1-9 control groups (Ctrl + 1-9 sets one) */
+    rts: Object.freeze({
+      'rts.select': keys('Mouse0'), 'rts.order': keys('Mouse2'), 'rts.attackMove': keys('KeyA'), 'rts.stop': keys('KeyS'), 'rts.hold': keys('KeyH'), 'rts.patrol': keys('KeyP'),
+      'rts.queue': keys('ShiftLeft', 'ShiftRight'), 'rts.groupSet': keys('ControlLeft', 'ControlRight'),
+      ...Object.fromEntries(Array.from({ length: 9 }, (_, i) => ['rts.group' + (i + 1), keys('Digit' + (i + 1))])),
+    }),
     /** timeline(): Backspace skips a cutscene too (cancel / Esc always does) */
     cutsceneSkip: Object.freeze({ skip: Object.freeze(['Backspace']) }),
     /** debugPanel() / triggers(): F3 shows / hides the debug panel, F4 the trigger-zone wireframes */

@@ -66,6 +66,7 @@
 - [`engine.triggers`](api/triggers.md) triggers() Trigger zones: list add clear byTag fromMarkers
 - [`engine.particles`](api/particles.md) particles() Particles: define has emit attach count clear
 - [`engine.swarm`](api/swarm.md)  swarm
+- [`engine.rts`](api/rts.md) rts() rts: select issue
 - [`engine.settings`](api/settings.md) settings() Settings menu: get set preset define addSection open close toggle reset resetBindings rebind actionList …
 - [`engine.music`](api/music.md) music() Background music: define play stop stinger rules override pick
 - [`engine.characters`](api/characters.md) characters() Characters: findSpawn addPlayer moveInput addVehicle support removePlayer findPath findPathAsync; Character, NPC; engine.npcs: list add remove behavior tiers get character avoid (behavior and avoid: see recipes/02-npc)

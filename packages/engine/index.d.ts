@@ -31,7 +31,7 @@ import type {
 import type {
   CharactersApi, CharactersOptions, Interactions, InteractionsOptions, Dialogue, DialogueOptions, Inventory, InventoryOptions, Pickups, PickupsOptions,
   Quests, QuestsOptions, Photo, PhotoOptions, Ambience, AmbienceOptions, DebugPanel, Level, LevelOptions, Triggers, TriggersOptions,
-  Particles, Settings, SettingsOptions, SettingsTools, Music, MusicOptions,
+  Particles, Rts, RtsOptions, Settings, SettingsOptions, SettingsTools, Music, MusicOptions,
   Timeline, TimelineOptions, Character, NPC, UIWindow, WindowOptions,
   Content, Flow, FlowOptions, Hud, HudOptions, ScreenPoint, UIFocus, FocusHandle,
 } from './types/gameplay';
@@ -137,7 +137,7 @@ export const presets: {
   readonly player: { readonly [K in 'thirdPerson' | 'lockOn' | 'aim' | 'sideScroller']: Pick<import('./types/gameplay').PlayerOptions, 'control' | 'faceMode' | 'cameraFollow'> };
   readonly interactions: { readonly [K in 'nearest' | 'facing' | 'aim']: import('./types/gameplay').InteractionsOptions };
   /** Key maps for the actions modules declare (no module option takes keys): engine.input.bind(map) or createEngine({ bindings: { ...map } }) */
-  readonly bindings: { readonly [K in 'walk' | 'interact' | 'inventory' | 'quests' | 'photo' | 'gridRotate' | 'brake' | 'dialogNumbers' | 'rtsRotate' | 'cutsceneSkip' | 'debug']: Readonly<Record<string, readonly string[]>> };
+  readonly bindings: { readonly [K in 'walk' | 'interact' | 'inventory' | 'quests' | 'photo' | 'gridRotate' | 'brake' | 'dialogNumbers' | 'rtsRotate' | 'rts' | 'cutsceneSkip' | 'debug']: Readonly<Record<string, readonly string[]>> };
   readonly camera: { readonly follow: import('./types/physics').FollowCameraOptions; readonly overShoulder: import('./types/physics').FollowCameraOptions; readonly thirdPersonAction: import('./types/physics').FollowCameraOptions };
 };
 // Migrated: water() is generated from the JSDoc in modules/water/Water.js
@@ -189,6 +189,8 @@ export function level(opts?: LevelOptions): ModuleDef<Level>;
 export function triggers(opts?: TriggersOptions): ModuleDef<Triggers>;
 // Migrated: particles() is generated from the JSDoc in modules/particles/Particles.js
 export { particles } from './types/generated/modules/particles/Particles';
+/** RTS match view and controls -> engine.rts (needs @threedog/rts) */
+export function rts(opts: RtsOptions): ModuleDef<Rts>;
 // swarm() and the Swarm class are generated from the JSDoc in modules/swarm/Swarm.js
 export { swarm } from './types/generated/modules/swarm/Swarm';
 /** Settings menu -> engine.settings */

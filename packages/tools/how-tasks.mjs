@@ -28,6 +28,7 @@ export const MODULES = {
   photo: 'take a snapshot in game and keep it',
   pickups: 'coins on the ground to collect',
   quests: 'mission list with objectives',
+  rts: 'command an army of units in a strategy game',
   rigid: 'crates that fall and can be pushed',
   settings: 'pause menu with volume and key rebinding',
   sky: 'sun moving and day night cycle',
@@ -54,6 +55,7 @@ export const FACTORIES = {
 
 /** engine.<group> -> task words: the groups of docs/api-surface.txt "engine sub-objects" */
 export const GROUPS = {
+  rts: 'select soldiers and give them orders',
   adaptive: 'lower the resolution when the framerate drops',
   assets: 'load a model file',
   audio: 'play a sound effect',
@@ -155,11 +157,12 @@ export const RECIPES = {
   '64-particles': 'dust and sparks when something lands',
   '65-swarm': 'thousands of shots and debris',
   '66-common-tasks': 'climb a ladder',
+  '67-rts': 'drag a box to pick soldiers and send them to attack',
 };
 
 /** threedog how --browse: a few categories by what a game needs, not by where the code sits. An id may sit in two; every capability sits in at least one (R64) */
 export const CATEGORIES = {
-  character: { title: 'Input, characters and camera', ids: `input player characters interactions cameraRig firstPersonCamera followCamera fixedCamera rtsCamera collision control cameraOverride autoView rays collider3d ground views
+  character: { title: 'Input, characters and camera', ids: `input player characters interactions cameraRig firstPersonCamera followCamera fixedCamera rtsCamera rts 67-rts collision control cameraOverride autoView rays collider3d ground views
     nav rigid npcs 02-npc 11-vehicles 12-navmesh 13-animation 19-shooting-picking 21-camera 57-control 58-input 63-third-person-start` },
   items: { title: 'Items, quests and game rules', ids: `inventory pickups interactions quests dialogue triggers grids vars stacks ops events random 03-items-pickups 04-quests 22-shop-gold 23-ops 29-grid 30-templates 32-action-game 66-common-tasks` },
   time: { title: 'Time, saves, scenes and data', ids: `time clock calendar saves session flow timeline settings world content level runState page jobs 01-new-game 06-clock-events 07-flow-scenes-pause 14-custom-module 18-world 20-content-actions-save
@@ -202,6 +205,7 @@ export const ROUTES = [
   ['light shafts through window', '34-environment-lighting.md §"Light you can see in the air"', { top: true, renderer: 'webgpu' }],
   ['walking character with third person camera', '63-third-person-start.md §1'],
   ['bind keys and gamepad buttons', '58-input.md §1'],
+  ['command an army of units in a strategy game', '67-rts.md'],
   // one per AI.md row (R22)
   ['which code wrote this value in the picture', '52-around-the-picture.md §"Who writes it"'],
   ['texture and material on a model', '09-materials-lights-models.md §1'],

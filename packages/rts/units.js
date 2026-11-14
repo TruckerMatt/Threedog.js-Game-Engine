@@ -124,6 +124,10 @@ export function unitsSystem() {
         const o = e.orders[0];
         if (!o) { e.state = e.target ? ENGAGING : IDLE; continue; }
         if (o.t === 'hold') { e.state = HOLDING; continue; }
+        if (o.t === 'attack' && e.target !== o.target) {   // an attack order names its target: lock it while the team can see it
+          const t = sim.get(o.target);
+          if (t && (!sim.vision || sim.vision.seen(sim.teamOf(e), t))) e.target = t.id;
+        }
         // an engaged unit (attack order, or attack-move / patrol that found a target) moves toward its target until in range
         if (e.target && (o.t === 'attack' || o.t === 'amove' || o.t === 'patrol')) {
           const t = sim.get(e.target);

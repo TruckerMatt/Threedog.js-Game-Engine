@@ -33,6 +33,10 @@
 - `time:skip` [{ seconds: number }] engine.skip jumped game time forward (seconds = calendar seconds skipped); timers and world catch-up already ran
 - `weather:lightning` [] Lightning strike (weather module)
 - `weather:change` [change: { from: string; to: string }] engine.weather.set switched to another weather name (once, when the blend starts; setting the same name again does not fire)
+- `rts:fire` [RtsFireEvent] rts() module: a weapon fired somewhere the local team sees (meters). Draw the muzzle flash and play the shot from this
+- `rts:hit` [RtsHitEvent] rts() module: damage landed somewhere the local team sees (damage in hit points)
+- `rts:death` [RtsUnitEvent & { by: number }] rts() module: a unit died somewhere the local team sees (x, z where it last stood)
+- `rts:spawn` [RtsUnitEvent] rts() module: a unit appeared somewhere the local team sees (trained, built, placed)
 - `camera:shot` [CameraShotEvent] The fixed-shot camera switched shots
 - `camera:change` [{ kind: string; previous: string }] engine.setCamera switched the camera kind; settings that belong to the camera (sensitivity, invert Y, field of view) are re-applied on it
 - `character:jump` [{ character: Character; air: boolean; index: number }] A character jumped

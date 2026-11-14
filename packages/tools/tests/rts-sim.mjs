@@ -65,6 +65,15 @@ export async function run({ check }) {
   check('an unknown command type names the known ones', /known: .*move/.test(s.run({ p: 0, t: 'fly', ids: [mine.id] })));
   check('a point off the map is refused', /off the map/.test(s.run({ p: 0, t: 'move', ids: [mine.id], x: fx(500), z: 0 })));
 
+  // an attack order chases one named target until it dies
+  const at = createMatch({ content: loadContent(RAW), map: createMap({ width: 200, depth: 100 }), players: [{ team: 0 }, { team: 1 }] });
+  const hunter = at.spawn('tank', { owner: 0, x: fx(-30), z: fx(0) }), near = at.spawn('soldier', { owner: 1, x: fx(-5), z: fx(8) }), prey = at.spawn('soldier', { owner: 1, x: fx(5), z: fx(0) });
+  at.step([{ p: 0, t: 'attack', ids: [hunter.id], target: prey.id }]);
+  const kept = hunter.orders[0]?.t === 'attack' && hunter.target === prey.id;
+  for (let t = 0; t < 400 && at.get(prey.id); t++) at.step();
+  check('an attack order locks its named target and keeps it until the target dies', kept && !at.get(prey.id), `kept ${kept}, prey alive ${!!at.get(prey.id)}`);
+  void near;
+
   // formation arrival and walking around a wall
   const w = createMatch({ content: loadContent(RAW), map: createMap({ width: 200, depth: 200, blocked: (x, z) => Math.abs(x) < 3 && z > -60 && z < 60 }), players: [{ team: 0 }] });
   const ids = [];

@@ -37,6 +37,7 @@ import { level } from './modules/level/index.js';
 import { triggers } from './modules/triggers/index.js';
 import { particles } from './modules/particles/Particles.js';
 import { swarm } from './modules/swarm/Swarm.js';
+import { rts } from './modules/rts/index.js';
 import { settings } from './modules/settings/index.js';
 import { music } from './modules/music/index.js';
 import { firstPersonCamera, fixedCamera, rtsCamera } from './modules/camera/index.js';
@@ -75,7 +76,7 @@ for (const c of [calendarContract, cameraContract, charactersContract, collision
 export { THREE, Engine };
 export { Animator } from './core/assets/Animator.js';
 export { terrain, vegetation, calendar, sky, weather, water, collision, rigid, followCamera, characters, interactions, dialogue, inventory, pickups, quests, photo, ambience, debug,
-  level, triggers, particles, swarm, settings, music, firstPersonCamera, fixedCamera, rtsCamera, timeline, nav, hlod, lightPool, content, flow, hud, world, grids };
+  level, triggers, particles, swarm, rts, settings, music, firstPersonCamera, fixedCamera, rtsCamera, timeline, nav, hlod, lightPool, content, flow, hud, world, grids };
 export { net, fakeNetwork, webSocket } from './modules/net/index.js';
 export { screenToGround } from './core/scene/screenToGround.js';
 export { ease } from './core/base/easing.js';

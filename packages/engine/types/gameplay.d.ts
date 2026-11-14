@@ -369,6 +369,83 @@ export interface SwarmMaker {
 export type { Particles };
 
 // ======================================================================
+// RTS rts()
+// ======================================================================
+
+/** How one unit kind is drawn by rts(). Without a look a kind is a gray box sized by its radius. The model's forward is +x (a unit facing +x looks along +x) */
+export interface RtsLook {
+  /** Plain three.js geometry, stays the game's to dispose */
+  geometry?: import('three').BufferGeometry;
+  /** Plain three.js material, stays the game's to dispose; it is tinted per team through the instance color */
+  material?: import('three').Material;
+  /** Uniform scale of the model (default 1) */
+  scale?: number;
+  /** Lift above the ground in meters (default: half the placeholder box; 0 with your own geometry) */
+  y?: number;
+}
+/** Options of rts(). See recipes/67-rts.md */
+export interface RtsOptions {
+  /** The match driver from @threedog/rts: localDriver(sim, { player }) or a lockstep driver. The module steps it and reads its sim */
+  driver: any;
+  /** How each unit kind is drawn: { [kind]: RtsLook }; the key "projectile" draws shots in flight */
+  look?: Record<string, RtsLook>;
+  /** A color per team index, anything THREE.Color takes. Without it each team is a different gray */
+  teamColors?: Array<import('three').ColorRepresentation>;
+  /** false turns off the built-in mouse and keys: the game calls engine.rts.select and engine.rts.issue itself (default true) */
+  controls?: boolean;
+  /** A minimap canvas (CSS class threedog-rts-minimap) in the lower-left corner (default true) */
+  minimap?: boolean;
+  /** A dark overlay on the ground for what the local team has not seen; false keeps only the fog texture (default true) */
+  fog?: boolean;
+}
+/** rts:fire */
+export interface RtsFireEvent { id: number; target: number; weapon: string; x: number; z: number; tx: number; tz: number; tick: number }
+/** rts:hit */
+export interface RtsHitEvent { id: number; by: number; damage: number; x: number; z: number; tick: number }
+/** rts:spawn and (with by) rts:death */
+export interface RtsUnitEvent { id: number; kind: string; owner: number; x: number; z: number; tick: number }
+/** The fog overlay and the data behind it */
+export interface RtsFog {
+  /** The overlay mesh, null with fog: false @type {import('three').Mesh | null} */
+  mesh: import('three').Mesh | null;
+  /** The overlay material: neutral dark gray with a per-vertex alpha (plain three.js, restyle it) */
+  material: import('three').Material | null;
+  /** One texel per vision cell: r = seen now, g = ever seen */
+  texture: import('three').DataTexture;
+  /** The { value } objects behind engine.uniforms.uRtsFog and uRtsFogBounds, for your own ShaderMaterial */
+  uniforms: { uRtsFog: { value: import('three').DataTexture }; uRtsFogBounds: { value: import('three').Vector4 } };
+}
+/** engine.rts: the page side of an RTS match */
+export interface Rts {
+  /** The match driver given to rts() */
+  readonly driver: any;
+  /** The sim (read it, never change it) */
+  readonly sim: any;
+  /** Entity ids of the selected units, all the local player's own (read only: change it with select) */
+  readonly selection: readonly number[];
+  /** The unit meshes by kind name: plain InstancedMesh, so castShadow, layers and renderOrder are yours */
+  readonly meshes: Record<string, import('three').InstancedMesh>;
+  /** The selection ring's material (neutral gray; restyle it) */
+  readonly ringMaterial: import('three').Material;
+  /** The filled part of a health bar */
+  readonly barMaterial: import('three').Material;
+  /** The empty part behind a health bar */
+  readonly barBackMaterial: import('three').Material;
+  /** The fog overlay and texture; null for an observer or a sim without the vision system */
+  readonly fog: RtsFog | null;
+  /**
+   * Select units by entity id. Ids that are not alive, or not the local player's, are dropped. Returns the new selection
+   * @example engine.rts.select([engine.rts.sim.entities.find(u => u.owner === 0).id]);
+   */
+  select(ids: number[]): readonly number[];
+  /**
+   * Give a command as the local player: { t: 'move', ids, x, z, queue? } with x and z fixed (fx(meters)). Returns '' or why it was refused
+   * @example engine.rts.issue({ t: 'move', ids: engine.rts.selection.slice(), x: fx(20), z: fx(-5) });
+   */
+  issue(cmd: Record<string, any>): string;
+}
+
+// ======================================================================
 // Settings menu settings()
 // ======================================================================
 

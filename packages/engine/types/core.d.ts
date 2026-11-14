@@ -3,6 +3,7 @@ import type { Object3D, Vector3, Vector2, Color, Texture, BufferGeometry, Handle
 import type {
   Terrain, TerrainDraw, Vegetation, VegetationDraw, Sky, Calendar, Weather, WeatherDraw, Water, WaterBody, WaterBodyOptions, VegetationRemoveEvent, Hlod, LightPool, Budget, BudgetLimits, BudgetReport,
 } from './world';
+import type { Rts, RtsFireEvent, RtsHitEvent, RtsUnitEvent } from './gameplay';
 import type { World } from './generated/modules/world/World';
 import type { Net } from './generated/modules/net/Net';
 import type { PostEffect } from './generated/render/PostFX';
@@ -104,6 +105,14 @@ export interface EventMap extends GameEvents {
   'weather:lightning': [];
   /** engine.weather.set switched to another weather name (once, when the blend starts; setting the same name again does not fire) */
   'weather:change': [change: { from: string; to: string }];
+  /** rts() module: a weapon fired somewhere the local team sees (meters). Draw the muzzle flash and play the shot from this */
+  'rts:fire': [RtsFireEvent];
+  /** rts() module: damage landed somewhere the local team sees (damage in hit points) */
+  'rts:hit': [RtsHitEvent];
+  /** rts() module: a unit died somewhere the local team sees (x, z where it last stood) */
+  'rts:death': [RtsUnitEvent & { by: number }];
+  /** rts() module: a unit appeared somewhere the local team sees (trained, built, placed) */
+  'rts:spawn': [RtsUnitEvent];
   /** The fixed-shot camera switched shots */
   'camera:shot': [CameraShotEvent];
   /** engine.setCamera switched the camera kind; settings that belong to the camera (sensitivity, invert Y, field of view) are re-applied on it */
@@ -294,6 +303,10 @@ export interface EngineUniforms {
   uRain: { value: number };
   /** Snow amount 0-1 (weather state, every frame) @experimental */
   uSnow: { value: number };
+  /** Only with rts() installed: the local team's fog as a texture, one texel per vision cell, r = seen now, g = ever seen (0 or 255); placed by uRtsFogBounds @experimental */
+  uRtsFog?: { value: import('three').DataTexture };
+  /** Only with rts() installed: (originX, originZ, width, depth) in meters of the area uRtsFog covers: uv = (xz - bounds.xy) / bounds.zw @experimental */
+  uRtsFogBounds?: { value: import('three').Vector4 };
   /** Weather's light multiplier (weather state, every frame; 1 = clear): your picture/ code multiplies its own lights by it */
   uWeatherLight: { value: number };
   /** Weather's fog multiplier (weather state, every frame; 1 = clear): your picture/ code multiplies its fog distance by it */
@@ -1970,6 +1983,8 @@ export declare class Engine {
   particles?: Particles;
   /** Makes a swarm of same-kind gameplay objects (swarm() module): engine.swarm({ name, capacity, geometry, material, fields }) @experimental */
   swarm?: SwarmMaker;
+  /** RTS match view and controls (rts() module): units, selection, orders, fog, minimap @experimental */
+  rts?: Rts;
   /** Settings menu (settings() module) */
   settings?: Settings;
   /** Background music (music() module) */

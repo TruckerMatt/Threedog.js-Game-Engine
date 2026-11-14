@@ -88,8 +88,8 @@ A row or `threedog how` -> recipe -> `api/<module>.md`. Also: `CONVENTIONS.md`, 
 | UI, menus, HUD, languages, settings, photo mode | `engine.ui`, `makeWindow`, `toast(engine, text)`, `engine.hud`, `engine.i18n`, `engine.settings`, `engine.photo` | 26-ui-parts.md §1, 26-ui-parts.md §6 |
 | Action game: hp, attacks, enemy AI, drops | your ops + `world.simulate` | 32-action-game.md §1 |
 | Ambient occlusion, soft shadows | `engine.post.add(ao())`, `bakeVertexAO` | 52-around-the-picture.md |
-| Many bullets, debris | `engine.swarm` | 65-swarm.md §"Which tool for many things" |
-| Enemy crowds, flocks | `engine.swarm` | 65-swarm.md §"Which tool for many things" |
+| Many bullets, debris, enemy crowds, flocks | `engine.swarm` | 65-swarm.md §"Which tool for many things" |
+| RTS units, fog, minimap | `engine.rts` | 67-rts.md |
 
 ### Project, world, content
 | To do | Use | Recipe |

@@ -14,7 +14,7 @@ import { parseOptions } from './lib/cli-args.mjs';
 
 const CHECK = !!parseOptions(process.argv.slice(2), { flags: ['check'] }).opt.check;
 const OUT = abs(P.METADATA_REL);
-const ARGS = { net: { role: 'host', transport: {} } };   // the one factory that refuses to build with no options; a definition is only read here, nothing connects
+const ARGS = { net: { role: 'host', transport: {} }, rts: { driver: {} } };   // the factories that refuse to build with no options; a definition is only read here, nothing connects
 const load = f => import(pathToFileURL(abs(f)).href);
 const isContract = f => /(^|[/.])contract\.js$/.test(f);
 const AUTHORED = f => !f.startsWith(`${P.MODULES_REL}/content/`);   // a pack's own actions are the game's, listed in its GAMEMAP

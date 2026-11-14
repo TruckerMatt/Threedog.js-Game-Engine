@@ -1928,6 +1928,83 @@ export const metadata = {
     "noSkip": "bodies rest while time jumps (stepping seconds of physics would only scatter them)"
    }
   },
+  "rts": {
+   "call": "rts",
+   "file": "packages/engine/modules/rts/index.js",
+   "label": "RTS",
+   "needs": [
+    "driver"
+   ],
+   "type": "rules",
+   "provides": [],
+   "requires": [],
+   "handRolled": "none: a crowd of units on a deterministic sim has no short code shape to detect; the module is the whole browser side",
+   "stage": "gameplay",
+   "before": [],
+   "after": [],
+   "optional": [
+    "cameraRig"
+   ],
+   "params": {
+    "driver": {
+     "type": "object",
+     "desc": "the match driver from @threedog/rts (localDriver(sim) or a lockstep driver); the module steps it and reads its sim"
+    },
+    "look": {
+     "type": "object",
+     "optional": true,
+     "default": {},
+     "desc": "how each unit kind is drawn: { [kind]: { geometry?, material?, scale?, y? } }; \"projectile\" is the shot. A kind with no look is a gray box sized by its radius"
+    },
+    "teamColors": {
+     "type": "array",
+     "optional": true,
+     "desc": "a color per team index (anything THREE.Color takes); without it each team is a different gray"
+    },
+    "controls": {
+     "type": "bool",
+     "optional": true,
+     "default": true,
+     "desc": "false turns off the built-in mouse and keys: the game calls engine.rts.select and engine.rts.issue itself"
+    },
+    "minimap": {
+     "type": "bool",
+     "optional": true,
+     "default": true,
+     "desc": "a minimap canvas in the lower-left corner (CSS class threedog-rts-minimap)"
+    },
+    "fog": {
+     "type": "bool",
+     "optional": true,
+     "default": true,
+     "desc": "a dark overlay on the ground for what the local team has not seen; false keeps only the fog texture"
+    }
+   },
+   "page": true,
+   "documented": true,
+   "names": [
+    "select",
+    "issue",
+    "driver",
+    "sim",
+    "selection",
+    "meshes",
+    "ringMaterial",
+    "barMaterial",
+    "barBackMaterial",
+    "fog"
+   ],
+   "sections": [],
+   "saves": [],
+   "time": {
+    "kind": "none",
+    "hooks": [
+     "fixed",
+     "frame"
+    ],
+    "noSkip": "the match runs in real time on its driver; a time jump does not advance it"
+   }
+  },
   "settings": {
    "call": "settings",
    "file": "packages/engine/modules/settings/Settings.js",
@@ -3572,6 +3649,13 @@ export const metadata = {
    "context": "walk",
    "label": "photo.action",
    "file": "packages/engine/modules/photo/Photo.js"
+  },
+  {
+   "action": "name",
+   "context": "walk",
+   "label": "(variable)",
+   "optional": true,
+   "file": "packages/engine/modules/rts/controls.js"
   },
   {
    "action": "cancel",

@@ -28,6 +28,7 @@ Type = what the module may own (core/engine/moduleTypes.js): world, picture, act
 | grids | world | modules/grid/index.js |
 | interactions | rules | modules/gameplay/Interactions.js |
 | pickups | rules | modules/gameplay/pickups.js |
+| rts | rules | modules/rts/index.js |
 | swarm | rules | modules/swarm/Swarm.js |
 | triggers | rules | modules/triggers/index.js |
 | hud | ui | modules/hud/index.js |
@@ -92,6 +93,7 @@ Type = what the module may own (core/engine/moduleTypes.js): world, picture, act
 - particles/ Particles module: dust, falling leaves, splashes, chimney smoke… — Particles.js, effect.js, lit.js, shaders.js
 - photo/ Photo mode: a sharper shot, then restore — Photo.js, pathTrace.js
 - rigid/ Real physics (Rapier): objects that topple, roll, get pushed an… — RigidBodies.js, Vehicles.js, collider3d.contract.js, ragdoll.js, ragdollBones.js, refresh.js, sync.js
+- rts/ RTS module: draws and operates a match from @threedog/rts — controls.js, draw.js, events.js, fog.js, marks.js, minimap.js, ops.js, pick.js, pool.js, strings.js, views.js
 - settings/ Settings menu module entry — Settings.js, apply.js, sections.js, strings.js, view.js
 - sky/ Sky module: signals (engine.uniforms: uSunDir, uSunColor, uSkyT… — Sky.js, clouds.js, dome.js, domeLayers.js, environment.js, fog.js, frame.js, season.js, shader.js, skyModule.js, tint.js
 - swarm/ Swarm module: many same-kind gameplay objects (bullets, enemy c… — Swarm.js, draw.js, grid.js
@@ -219,6 +221,10 @@ Type = what the module may own (core/engine/moduleTypes.js): world, picture, act
 | quest:step | gameplay | — |
 | quest:unpaid | gameplay | — |
 | rigid:rebuilt | rigid | rigid |
+| rts:death | rts | — |
+| rts:fire | rts | — |
+| rts:hit | rts | — |
+| rts:spawn | rts | — |
 | save:imported | core/saves/saveFiles.js | photo |
 | save:loaded | core/saves/saveApply.js | — |
 | save:written | core/saves/Saves.js | — |
@@ -272,6 +278,7 @@ Modules declare actions without keys; the game binds them (createEngine({ bindin
 | quests (parameter action) | walk | quests.action | gameplay |
 | rotate (parameter rotate) | walk | grid.rotate | grid |
 | photo | walk | photo.action | photo |
+| name | walk | (variable) | rts |
 | cancel (parameter action) | walk | settings.action | settings |
 | skip | cutscene | timeline.skipAction | timeline |
 | triggersDebug (parameter action) | walk | triggers.debug | triggers |
@@ -317,6 +324,7 @@ Modules declare actions without keys; the game binds them (createEngine({ bindin
 - modules/photo/Photo.js: module.* (1), photo.* (1)
 - modules/rigid/RigidBodies.js: module.* (1)
 - modules/rigid/Vehicles.js: vehicle.* (2)
+- modules/rts/strings.js: module.* (1), rts.* (9)
 - modules/settings/strings.js: settings.* (44), title.* (1), module.* (1)
 - modules/sky/skyModule.js: module.* (1)
 - modules/swarm/Swarm.js: module.* (1)
