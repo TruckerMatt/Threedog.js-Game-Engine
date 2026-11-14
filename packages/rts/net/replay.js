@@ -14,7 +14,7 @@ import { TICK_RATE } from '../content.js';
 export const REPLAY_VERSION = 1;
 
 /**
- * Build a replay from a driver's log. Hashes are recomputed by replaying, so they reflect the sim, not what a client claimed.
+ * Build a replay from a driver's log, with the hashes the driver's live sim computed (or recomputed with makeSim when it kept none).
  * @param {{ sim: object, log: Array<{ turn: number, cmds: Array<object> }>, settings?: object }} driver
  * @param {{ version?: string, settings?: object, makeSim?: (s: object) => object }} [o] makeSim: also record hashes (needs a fresh sim)
  */
@@ -22,7 +22,9 @@ export function makeReplay(driver, o = {}) {
   const settings = o.settings ?? driver.settings ?? null;
   const rep = { v: REPLAY_VERSION, version: o.version ?? '', settings, contentHash: driver.sim.content.hash, mapHash: driver.sim.map.hash,
     turns: driver.log.filter(t => t.cmds.length).map(t => [t.turn, t.cmds]), lastTurn: driver.log.length ? driver.log[driver.log.length - 1].turn : -1, hashes: [] };
-  if (o.makeSim) rep.hashes = run(rep, o.makeSim(settings)).hashes;
+  // the hashes the live sim computed (drivers keep them), so a replay is checked against the match as it was played; recomputed only if none
+  if (driver.hashes?.length) rep.hashes = driver.hashes.filter(([t]) => t <= rep.lastTurn).map(([t, h]) => [t, h]);
+  else if (o.makeSim) rep.hashes = run(rep, o.makeSim(settings)).hashes;
   return rep;
 }
 

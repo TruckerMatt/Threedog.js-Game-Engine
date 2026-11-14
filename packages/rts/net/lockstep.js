@@ -26,7 +26,7 @@ export function lockstepDriver(o) {
   const listeners = new Map(), turns = new Map(), snaps = new Map(), netEvents = [];
   let acc = 0, received = -1, lastWait = 0, buffer = o.buffer ?? 1, adaptive = o.buffer === undefined;
   const d = {
-    sim: null, transport: tr, player: -1, key: o.key ?? '', status: 'connecting', lobby: null, settings: null, desyncs: [], log: [],
+    sim: null, transport: tr, player: -1, key: o.key ?? '', status: 'connecting', lobby: null, settings: null, desyncs: [], log: [], hashes: [],
     get alpha() { return Math.min(1, acc * TICK_RATE); },
     get buffer() { return buffer; },
     /** Listen to a network event: 'welcome', 'lobby', 'start', 'desync', 'away', 'back', 'error', 'close' */
@@ -52,10 +52,10 @@ export function lockstepDriver(o) {
       const end = have - buffer * TURN_TICKS;
       // far behind (rejoin, a long stall, a slow machine): run extra ticks now
       if (end - sim.tick > 3 * TURN_TICKS) {
-        while (sim.tick < end && ticks < CATCHUP_PER_UPDATE) { runTick(events); ticks++; }
+        while (sim.tick < end && ticks < CATCHUP_PER_UPDATE && !sim.ended) { runTick(events); ticks++; }
         acc = Math.min(acc, dt);
       }
-      while (acc >= dt && sim.tick < end && ticks < CATCHUP_PER_UPDATE) { runTick(events); acc -= dt; ticks++; }
+      while (acc >= dt && sim.tick < end && ticks < CATCHUP_PER_UPDATE && !sim.ended) { runTick(events); acc -= dt; ticks++; }
       if (sim.ended) d.status = 'ended';
       else if (acc >= dt) {   // time is due but the turn is not here
         d.status = 'waiting'; acc = dt;
@@ -80,7 +80,9 @@ export function lockstepDriver(o) {
     if (first) { d.log.push({ turn, cmds }); turns.delete(turn); }
     for (const ev of sim.step(cmds)) events.push(ev);
     if ((t + 1) % TURN_TICKS === 0 && turn % HASH_EVERY === 0) {
-      if (d.player >= 0) tr.send({ type: 'hash', turn, hash: sim.hash() });
+      const h = sim.hash();
+      d.hashes.push([turn, h]);
+      if (d.player >= 0) tr.send({ type: 'hash', turn, hash: h });
       if (o.debugSnapshots) { snaps.set(turn, sim.snapshot()); for (const k of snaps.keys()) if (k < turn - HASH_EVERY * 3) snaps.delete(k); }
     }
   }

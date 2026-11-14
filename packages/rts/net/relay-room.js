@@ -166,7 +166,7 @@ export class RelayRoom {
     if (!Number.isInteger(turn) || turn % HASH_EVERY !== 0 || turn >= this.turn) return;
     const m = this.hashes.get(turn) ?? this.hashes.set(turn, new Map()).get(turn);
     m.set(p, hash >>> 0);
-    const active = this.slots.filter(s => !s.left).length;
+    const active = this.slots.filter(s => !s.left && s.conn).length;   // an away player must not hold up the comparison
     if (m.size >= active) {
       if (new Set(m.values()).size > 1) {
         const d = { type: 'desync', turn, hashes: Object.fromEntries(m) };

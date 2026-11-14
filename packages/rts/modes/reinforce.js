@@ -33,8 +33,8 @@ export function reinforceSystem(o) {
           if (!Array.isArray(c.kinds) || !c.kinds.length || c.kinds.length > maxPerDrop) return `kinds must list 1..${maxPerDrop} unit kind names`;
           let cost = 0;
           for (const n of c.kinds) {
-            const k = sim.content.kind[n];
-            if (!k) return `unknown kind '${n}'`;
+            const k = typeof n === 'string' ? sim.content.kind[n] : undefined;
+            if (!k) return `unknown kind '${String(n).slice(0, 40)}'`;
             if (k.structure) return `'${n}' is a structure and cannot be called in`;
             cost += k.cost;
           }
@@ -59,7 +59,6 @@ export function reinforceSystem(o) {
     },
     step(sim) {
       const R = sim.reinforce;
-      for (const ev of sim.events) if (ev.type === 'death' && ev.owner >= 0) R.refunds.push({ p: ev.owner, amount: sim.content.kind[ev.kind].cost, at: sim.tick + refundDelay });
       if (R.pending.length && R.pending.some(x => x.at <= sim.tick)) {
         for (const d of R.pending.filter(x => x.at <= sim.tick)) land(sim, d);
         R.pending = R.pending.filter(x => x.at > sim.tick);
@@ -69,6 +68,7 @@ export function reinforceSystem(o) {
         R.refunds = R.refunds.filter(x => x.at > sim.tick);
       }
     },
+    killed(sim, e) { if (e.owner >= 0) sim.reinforce.refunds.push({ p: e.owner, amount: sim.kindOf(e).cost, at: sim.tick + refundDelay }); },
     hash(sim, h) {
       const R = sim.reinforce;
       h.int(R.pending.length).int(R.refunds.length);

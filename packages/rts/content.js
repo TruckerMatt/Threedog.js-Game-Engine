@@ -53,7 +53,7 @@ export function loadContent(raw) {
   checkKeys(raw, { units: 'object', weapons: 'object', armor: 'object', factions: 'object', modes: 'object' }, 'content');
   if (!raw.units || !Object.keys(raw.units).length) fail('units', 'needs at least one unit kind', "units: { soldier: { hp: 100, speed: 3, radius: 0.5, sight: 30 } }");
   const armor = raw.armor ?? {};
-  const weapons = {};
+  const weapons = Object.create(null);   // no prototype: a command naming '__proto__' or 'constructor' finds nothing
   for (const name of Object.keys(raw.weapons ?? {}).sort()) {
     const w = raw.weapons[name], p = `weapons.${name}`;
     checkKeys(w, WEAPON_KEYS, p);
@@ -69,7 +69,7 @@ export function loadContent(raw) {
   for (const [a, table] of Object.entries(armor)) for (const [t, m] of Object.entries(table)) if (!Number.isFinite(m) || m < 0) fail(`armor.${a}.${t}`, 'must be a number >= 0 (damage multiplier)');
   const armorFx = Object.fromEntries(Object.entries(armor).map(([a, t]) => [a, Object.fromEntries(Object.entries(t).map(([k, m]) => [k, fx(m)]))]));
   const names = Object.keys(raw.units).sort();
-  const kinds = [], kind = {};
+  const kinds = [], kind = Object.create(null);
   names.forEach((name, index) => {
     const u = raw.units[name], p = `units.${name}`;
     checkKeys(u, UNIT_KEYS, p);

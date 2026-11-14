@@ -1,6 +1,7 @@
 // The RTS sim core (@threedog/rts): fixed-point math stays close to real math, two runs with the same commands give the same hash every tick,
 // a snapshot restored mid-match continues on the same hashes, commands for another player's units are refused, a group reaches its point in
 // formation, a wall is walked around, fog keeps hidden enemies untargetable and a hill blocks sight.
+import { reinforceMatch } from '@threedog/rts/examples/content.js';
 import { createMatch, loadContent, createMap, fx, toFloat, mul, div, sqrt, sin, cos, atan2, ANGLE, ONE, hex } from '@threedog/rts';
 
 export const name = 'rts sim: fixed math, same hash every run, snapshot continues, refused commands, formation arrival, walls, fog and hills (node)';
@@ -73,6 +74,22 @@ export async function run({ check }) {
   for (let t = 0; t < 400 && at.get(prey.id); t++) at.step();
   check('an attack order locks its named target and keeps it until the target dies', kept && !at.get(prey.id), `kept ${kept}, prey alive ${!!at.get(prey.id)}`);
   void near;
+
+  // review fixes: hostile names are refused, no friendly attacks, an attack on a hidden target is kept and followed
+  const rv = createMatch({ content: loadContent(RAW), map: createMap({ width: 200, depth: 100 }), players: [{ team: 0 }, { team: 1 }],
+    extra: [] });
+  const a1 = rv.spawn('soldier', { owner: 0, x: fx(-60), z: 0 }), a2 = rv.spawn('soldier', { owner: 0, x: fx(-58), z: 0 }), foe = rv.spawn('soldier', { owner: 1, x: fx(70), z: 0 });
+  check('attacking a unit on your own team is refused', /own team/.test(rv.run({ p: 0, t: 'attack', ids: [a1.id], target: a2.id })));
+  rv.step([{ p: 0, t: 'attack', ids: [a1.id], target: foe.id }]);
+  const startX = a1.x;
+  for (let t = 0; t < 40; t++) rv.step();
+  check('an attack order on a target hidden in fog is kept, and the unit heads toward it', a1.orders[0]?.t === 'attack' && a1.x > startX, `${JSON.stringify(a1.orders)} moved ${toFloat(a1.x - startX)} m`);
+  const rm = reinforceMatch({ seed: 1, players: [{ team: 0 }, { team: 1 }] });
+  const res0 = rm.players[0].res;
+  const bad = ['__proto__', 'constructor', ['tank'], 7].map(k => rm.run({ p: 0, t: 'reinforce', kinds: [k], x: fx(-260), z: 0 }));
+  check('a reinforce naming __proto__, constructor, an array or a number is refused and costs nothing', bad.every(w => /unknown kind/.test(w)) && rm.players[0].res === res0, JSON.stringify(bad));
+  const kc = loadContent(RAW);
+  check('content lookups have no prototype: "__proto__" is not a unit kind', kc.kind['__proto__'] === undefined && kc.kind.constructor === undefined);
 
   // formation arrival and walking around a wall
   const w = createMatch({ content: loadContent(RAW), map: createMap({ width: 200, depth: 200, blocked: (x, z) => Math.abs(x) < 3 && z > -60 && z < 60 }), players: [{ team: 0 }] });

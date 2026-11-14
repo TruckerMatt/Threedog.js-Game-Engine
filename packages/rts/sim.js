@@ -42,7 +42,11 @@ export function createSim(o) {
   sim.teams = [...new Set(sim.players.map(p => p.team))].sort((a, b) => a - b);
 
   /** Add a hashed and saved integer field to every entity (default value def) */
-  sim.field = (name, def = 0) => { if (!sim.fields.includes(name)) sim.fields.push(name); sim.fieldDefaults[name] = def; };
+  sim.field = (name, def = 0) => {
+    if (!sim.fields.includes(name)) sim.fields.push(name);
+    sim.fieldDefaults[name] = def;
+    for (const e of sim.entities) if (!(name in e)) e[name] = def;   // entities spawned before this system was installed
+  };
   sim.fieldDefaults = {};
 
   /**
@@ -80,7 +84,12 @@ export function createSim(o) {
   /** Alive entity by id, or null */
   sim.get = id => { const e = sim.byId.get(id); return e && e.hp > 0 ? e : null; };
   /** Mark an entity dead; it leaves sim.entities at the end of the step */
-  sim.kill = (e, by = 0) => { if (e.hp <= 0 && e.dead) return; e.hp = 0; e.dead = true; sim.emit({ type: 'death', id: e.id, kind: sim.kindOf(e).name, owner: e.owner, by }); };
+  sim.kill = (e, by = 0) => {
+    if (e.dead) return;
+    e.hp = 0; e.dead = true;
+    sim.emit({ type: 'death', id: e.id, kind: sim.kindOf(e).name, owner: e.owner, by });
+    for (const s of sim.systems) s.killed?.(sim, e, by);   // every system hears of it now, whatever the install order
+  };
   /** Record something that happened this tick, for drawing and sound (not hashed, not saved) */
   sim.emit = ev => { ev.tick = sim.tick; sim.events.push(ev); };
 
@@ -197,8 +206,10 @@ export function createSim(o) {
 export function installSystem(sim, s) {
   if (!s?.name) throw new Error('installSystem: a system needs a name');
   if (sim.systems.some(x => x.name === s.name)) throw new Error(`rts system '${s.name}' is installed twice`);
+  const before = sim.entities.slice();
   sim.systems.push(s);
   s.init?.(sim);
+  for (const e of before) s.spawned?.(sim, e);   // entities made by earlier systems' setup get this system's per-entity state too
 }
 
 /** Build a sim from a snapshot: createSim with the same options, then restore */

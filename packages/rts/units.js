@@ -100,7 +100,12 @@ export function unitsSystem() {
       sim.defineCommand('amove', pointOrder('amove'));
       sim.defineCommand('patrol', pointOrder('patrol'));
       sim.defineCommand('attack', {
-        validate: (sim, c) => checkIds(sim, c) || checkQueue(c) || (!Number.isInteger(c.target) ? 'target must be an entity id' : ''),
+        validate(sim, c) {
+          const why = checkIds(sim, c) || checkQueue(c) || (!Number.isInteger(c.target) ? 'target must be an entity id' : '');
+          if (why) return why;
+          const t = sim.get(c.target);
+          return t && t.owner >= 0 && sim.teamOf(t) === sim.players[c.p].team ? `entity ${c.target} is on your own team` : '';
+        },
         apply(sim, c) {
           const t = sim.get(c.target);
           if (!t) return;
@@ -124,9 +129,11 @@ export function unitsSystem() {
         const o = e.orders[0];
         if (!o) { e.state = e.target ? ENGAGING : IDLE; continue; }
         if (o.t === 'hold') { e.state = HOLDING; continue; }
-        if (o.t === 'attack' && e.target !== o.target) {   // an attack order names its target: lock it while the team can see it
+        if (o.t === 'attack') {   // an attack order lasts while its target lives: locked (and fired at) while seen, followed while hidden
           const t = sim.get(o.target);
-          if (t && (!sim.vision || sim.vision.seen(sim.teamOf(e), t))) e.target = t.id;
+          if (!t) { e.orders.shift(); e.target = 0; continue; }
+          if (!sim.vision || sim.vision.seen(sim.teamOf(e), t)) e.target = t.id;
+          else { e.target = 0; e.state = MOVING; moveToward(sim, e, k, t.x, t.z, sim.map.cellAt(t.x, t.z)); continue; }
         }
         // an engaged unit (attack order, or attack-move / patrol that found a target) moves toward its target until in range
         if (e.target && (o.t === 'attack' || o.t === 'amove' || o.t === 'patrol')) {

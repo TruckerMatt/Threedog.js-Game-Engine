@@ -15,6 +15,7 @@
 //   driver.issue({ t: 'move', ids: [3], x: fx(10), z: fx(0) });
 //   const { events } = driver.update(1 / 60);
 import { TICK_RATE } from '../content.js';
+import { HASH_EVERY } from './protocol.js';
 
 /** Ticks per turn: commands are grouped into turns of this many ticks (100 ms at 20 ticks per second) */
 export const TURN_TICKS = 2;
@@ -38,7 +39,7 @@ export function checkShape(cmd) {
 export function localDriver(sim, o = {}) {
   let acc = 0, queued = [], pending = [];
   const d = {
-    sim, player: o.player ?? 0, speed: o.speed ?? 1, status: 'running', log: [],
+    sim, player: o.player ?? 0, speed: o.speed ?? 1, status: 'running', log: [], hashes: [],
     get alpha() { return Math.min(1, acc * TICK_RATE); },
     issue(cmd) {
       const why = checkShape(cmd);
@@ -59,6 +60,7 @@ export function localDriver(sim, o = {}) {
         }
         const cmds = sim.tick % TURN_TICKS === 0 ? pending : [];
         for (const ev of sim.step(cmds)) events.push(ev);
+        if (sim.tick % TURN_TICKS === 0 && (sim.tick / TURN_TICKS - 1) % HASH_EVERY === 0) d.hashes.push([sim.tick / TURN_TICKS - 1, sim.hash()]);
         acc -= dt; ticks++;
         if (sim.ended) { d.status = 'ended'; break; }
       }

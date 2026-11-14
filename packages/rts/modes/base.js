@@ -133,9 +133,8 @@ export function baseSystem(o = {}) {
         if (k.structure && e.owner >= 0) structureStep(sim, B, e, k);
         else if (e.orders[0]?.t === 'gather') gatherStep(sim, B, e, k);
       }
-      // a dead structure opens its cells again
-      for (const ev of sim.events) if (ev.type === 'death') { const k = sim.content.kind[ev.kind]; if (k.structure) unblock(sim, ev.id); }
     },
+    killed(sim, e) { if (sim.kindOf(e).structure) unblock(sim, e.id); },   // a dead structure opens its cells again
     hash(sim, h) { for (const v of sim.base.income) h.int(v); },
     save: sim => ({ income: sim.base.income.slice(), blocked: [...sim.base.blocked] }),
     load(sim, d) {

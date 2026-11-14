@@ -62,7 +62,7 @@ export function combatSystem() {
     },
     hash(sim, h) {
       h.int(sim.nextShot).int(sim.projectiles.length);
-      for (const p of sim.projectiles) h.int(p.id).int(p.by).int(p.x).int(p.z).int(p.tx).int(p.tz).int(p.target);
+      for (const p of sim.projectiles) h.int(p.id).int(p.by).int(p.owner).str(p.w).int(p.x).int(p.z).int(p.tx).int(p.tz).int(p.target);
     },
     save: sim => ({ projectiles: sim.projectiles.map(p => ({ ...p })), nextShot: sim.nextShot }),
     load(sim, d) { sim.projectiles = d.projectiles.map(p => ({ ...p })); sim.nextShot = d.nextShot; },
